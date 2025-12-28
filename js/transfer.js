@@ -94,7 +94,8 @@ function renderTransferTable(rows) {
         <td>${i + 1}</td>
         <td>${new Date(r.time).toLocaleDateString()}</td>
         <td>${new Date(r.date).toLocaleDateString()}</td>
-        <td>${r.fromBank} → ${r.toBank}</td>
+        <td>${r.fromBank}</td>
+        <td>${r.toBank}</td>
         <td >${r.description}</td>
         <td class="text-center">₹${Number(r.amount).toFixed(2)}</td>
         <td class="text-center">
