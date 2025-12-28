@@ -1,0 +1,47 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="#">Budget Tracking App</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <span class="nav-link fw-semibold">
+            👤 <span id="nav-username">Please Wait...</span>
+          </span>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="dashboard.html">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="parking.html">Car Parking Details</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarLightDropdownMenuLink" role="button"
+            data-bs-toggle="dropdown" aria-expanded="false">
+            Transactions
+          </a>
+          <ul class="dropdown-menu dropdown-menu-light" aria-labelledby="navbarLightDropdownMenuLink">
+            <li>
+              <a class="dropdown-item" href="transaction.html">Add transaction</a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="banktrans.html">Add Bank Transfer</a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="viewtrans.html">View Transactions</a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="transfer.html">View Bank Transfers</a>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="btn btn-outline-danger" onclick="logout()">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

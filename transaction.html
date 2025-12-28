@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transaction</title>
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="css/main.css" />
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- fontawesome icon cdn -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+</head>
+
+<body>
+  <div id="navbar"></div>
+  <div class="container mt-5 pt-4">
+    <div class="row">
+      <div class="m-auto col-12 col-sm-10 col-md-8 col-lg-6 bg-white rounded pt-3 overflow-hidden">
+        <form class="transact-form" onsubmit="return transact(event)" id="transact-form">
+          <h1 class="text-center" id="user-head">
+            Add Transaction
+          </h1>
+          <div class="form-floating mb-3 mt-5">
+            <input type="date" class="form-control" id="date" placeholder="Select date" data-step="1" required
+              autofocus />
+            <label for="date">Select Date</label>
+          </div>
+          <div class="form-floating mb-3">
+            <select class="form-select" id="bank" data-step="2" disabled required>
+              <option value="" selected>Select</option>
+              <option value="HDFC">HDFC</option>
+              <option value="INDIAN">INDIAN</option>
+              <option value="SIB">SIB</option>
+            </select>
+            <label for="bank">Select Bank</label>
+          </div>
+          <div class="form-floating mb-3">
+            <select class="form-select" id="inc" onchange="loadcategory(); loadtype();" data-step="3" disabled required>
+              <option value="" selected>Select</option>
+              <option value="Income">Income</option>
+              <option value="Expense">Expense</option>
+            </select>
+            <label for="inc">Income/Expense</label>
+          </div>
+          <div class="form-floating mb-3">
+            <select class="form-select" id="type" onchange="loadapp();" data-step="4" disabled required></select>
+            <label for="type">Mode</label>
+          </div>
+          <div class="form-floating mb-3">
+            <select class="form-select" id="app" data-step="5" disabled required></select>
+            <label for="app">Select App</label>
+          </div>
+          <div class="form-floating mb-3">
+            <select class="form-select" id="category" data-step="6" disabled required></select>
+            <label for="category">Category</label>
+          </div>
+          <div class="form-floating mb-3">
+            <textarea class="form-control" placeholder="Leave a comment here" id="description" style="height: 100px"
+              data-step="7" disabled required></textarea>
+            <label for="description">Description</label>
+          </div>
+          <div class="form-floating">
+            <input type="number" class="form-control" id="amount" step="0.01" min="0" data-step="8" required disabled />
+            <label for="amount">Amount</label>
+          </div>
+          <div class="d-flex align-items-center justify-content-evenly mt-5 text-center">
+            <button class="btn btn-success" type="submit" data-step="9" disabled>
+              Add
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div id="page-loader" class="page-loader d-none">
+    <div class="spinner-border text-light"></div>
+    <p class="mt-3 text-light">Please wait...</p>
+  </div>
+</body>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Main Script -->
+<script src="js/main.js"></script>
+<script src="js/transaction.js"></script>
+<!-- Sweet Alert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!--For Session-->
+<script src="js/session.js"></script>
+
+</html>
