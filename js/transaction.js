@@ -68,7 +68,7 @@ function transact(event) {
 }
 
 const category = {
-  Income: ["Salary", "For Trip", "Other Income"],
+  Income: ["Salary", "Not my money", "Sports", "Internal", "Other Income"],
   Expense: [
     "Savings",
     "Investment",
@@ -77,10 +77,17 @@ const category = {
     "Petrol",
     "Food",
     "Medicals",
-    "Travel",
-    "Trip - Mine",
-    "Trip - others",
+    "Travel & Parking - Office",
+    "Trip",
     "Grocery",
+    "Mobile Recharge",
+    "Entertainment",
+    "Electronics & Accessories",
+    "Fasion",
+    "Sports",
+    "Internal",
+    "Gift",
+    "Not my money",
     "Other Expense",
   ],
 };

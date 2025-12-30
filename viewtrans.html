@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard</title>
+  <link rel="icon" href="images/coin-indian-rupee-money-icon-260nw-2158721435-removebg-preview.png">
+  <title>My Transactions</title>
   <!-- Main CSS -->
   <link rel="stylesheet" href="css/main.css" />
   <!-- Bootstrap CSS -->
@@ -80,12 +81,37 @@
           </select>
           <label for="filterInc">Select Income/Expense</label>
         </div>
-        <div class="col-md-2 form-floating">
-          <select id="filterCategory" class="form-select" placeholder="Select Category">
-            <option value="">All Categories</option>
-          </select>
-          <label for="filterCategory">Select Category</label>
+
+        <div class="col-md-2">
+          <div class="form-floating dropdown">
+            <button id="categoryDropdownBtn" class="form-select text-start" type="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              All Categories
+            </button>
+
+            <label>Select Category</label>
+
+            <ul class="dropdown-menu w-100 p-2" id="filterCategoryList" style="max-height: 250px; overflow-y: auto;">
+
+              <!-- BUTTONS -->
+              <li class="d-flex justify-content-between gap-2 mb-2">
+                <button type="button" class="btn btn-sm btn-outline-primary w-50" onclick="selectAllCategories()">
+                  Select All
+                </button>
+
+                <button type="button" class="btn btn-sm btn-outline-secondary w-50" onclick="unselectAllCategories()">
+                  Unselect All
+                </button>
+              </li>
+
+              <hr class="my-2">
+
+              <!-- checkboxes will be added here -->
+            </ul>
+
+          </div>
         </div>
+
         <div class="col-md-2 d-flex align-items-center justify-content-center">
 
           <button class="btn btn-warning w-100" onclick="resetFilters()">Reset</button>

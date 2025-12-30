@@ -87,3 +87,22 @@ body.loading #page-loader {
   display: flex !important;
   pointer-events: all;
 }
+
+/* Make dropdown button behave like form-select */
+.form-floating .form-select {
+  padding-top: 1.625rem;
+  padding-bottom: 0.625rem;
+}
+
+/* Prevent dropdown from breaking floating label */
+.form-floating .dropdown-toggle::after {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Keep label floating */
+.form-floating > label {
+  z-index: 2;
+}

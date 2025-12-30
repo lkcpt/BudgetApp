@@ -3,6 +3,11 @@ let allTransactions = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   loadTransactions();
+  document
+    .getElementById("filterCategoryList")
+    .addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
 });
 
 ["fromDate", "toDate", "filterBank", "filterInc", "filterCategory"].forEach(
@@ -31,9 +36,14 @@ function loadTransactions() {
       }
 
       allTransactions = data.data;
+
       const mainRows = allTransactions.filter(
         (r) => r.type.toLowerCase() !== "transfer"
       );
+
+      // ✅ Build category checkboxes ONCE
+      buildCategoryCheckboxes(mainRows);
+
       updateFilterOptions(mainRows);
       renderTable(mainRows);
       updateSummary(mainRows);
@@ -126,7 +136,14 @@ function openEditModal(index) {
 }
 
 const editCategory = {
-  Income: ["Salary", "For Trip", "Other Income"],
+  Income: [
+    "Salary",
+    "Not my money",
+    "Sports",
+    "Internal",
+    "Money Back",
+    "Other Income",
+  ],
   Expense: [
     "Savings",
     "Investment",
@@ -135,10 +152,18 @@ const editCategory = {
     "Petrol",
     "Food",
     "Medicals",
-    "Travel",
-    "Trip - Mine",
-    "Trip - others",
+    "Travel & Parking - Office",
+    "Trip",
     "Grocery",
+    "Mobile Recharge",
+    "Entertainment",
+    "Electronics & Accessories",
+    "Fasion",
+    "Sports",
+    "Internal",
+    "Gift",
+    "Money Lend",
+    "Not my money",
     "Other Expense",
   ],
 };
@@ -275,30 +300,11 @@ function updateTransaction() {
     });
 }
 
-function populateFilterOptions(rows) {
-  const bankSel = document.getElementById("filterBank");
-  const catSel = document.getElementById("filterCategory");
-
-  const banks = [...new Set(rows.map((r) => r.bank))];
-  const cats = [...new Set(rows.map((r) => r.category))];
-
-  bankSel.innerHTML = `<option value="">All Banks</option>`;
-  banks.forEach(
-    (b) => (bankSel.innerHTML += `<option value="${b}">${b}</option>`)
-  );
-
-  catSel.innerHTML = `<option value="">All Categories</option>`;
-  cats.forEach(
-    (c) => (catSel.innerHTML += `<option value="${c}">${c}</option>`)
-  );
-}
-
 function applyFilters() {
   const from = document.getElementById("fromDate").value;
   const to = document.getElementById("toDate").value;
   const bank = document.getElementById("filterBank").value;
   const inc = document.getElementById("filterInc").value;
-  const cat = document.getElementById("filterCategory").value;
 
   let filtered = allTransactions.filter((r) => {
     if (from) {
@@ -308,6 +314,7 @@ function applyFilters() {
       fd.setHours(0, 0, 0, 0);
       if (rd < fd) return false;
     }
+
     if (to) {
       const rd = new Date(r.date);
       const td = new Date(to);
@@ -315,16 +322,23 @@ function applyFilters() {
       td.setHours(0, 0, 0, 0);
       if (rd > td) return false;
     }
+
     if (bank && r.bank !== bank) return false;
     if (inc && r.inc !== inc) return false;
-    if (cat && r.category !== cat) return false;
+
+    // ✅ CATEGORY FILTER
+    const selectedCategories = getSelectedCategories();
+    if (
+      selectedCategories.length > 0 &&
+      !selectedCategories.includes(r.category)
+    )
+      return false;
+
     return true;
   });
 
-  // 🔄 Update dropdowns based on filtered data
   filtered = filtered.filter((r) => r.type.toLowerCase() !== "transfer");
 
-  updateFilterOptions(filtered, { keep: true });
   renderTable(filtered);
   updateSummary(filtered);
 }
@@ -334,9 +348,13 @@ function resetFilters() {
   document.getElementById("toDate").value = "";
   document.getElementById("filterBank").value = "";
   document.getElementById("filterInc").value = "";
-  document.getElementById("filterCategory").value = "";
 
-  // 🔄 rebuild from full dataset but exclude transfers
+  document.querySelectorAll(".category-check").forEach((cb) => {
+    cb.checked = true;
+  });
+
+  updateCategoryButtonText(); // ✅ IMPORTANT
+
   const filteredTransactions = allTransactions.filter(
     (r) => r.type.toLowerCase() !== "transfer"
   );
@@ -346,30 +364,20 @@ function resetFilters() {
   updateSummary(filteredTransactions);
 }
 
-function updateFilterOptions(rows, opts = {}) {
+function updateFilterOptions(rows) {
   const bankSel = document.getElementById("filterBank");
-  const catSel = document.getElementById("filterCategory");
-
-  const curBank = bankSel.value;
-  const curCat = catSel.value;
 
   const banks = [...new Set(rows.map((r) => r.bank))];
-  const cats = [...new Set(rows.map((r) => r.category))];
+  const curBank = bankSel.value;
 
   bankSel.innerHTML = `<option value="">All Banks</option>`;
   banks.forEach((b) => {
     bankSel.innerHTML += `<option value="${b}">${b}</option>`;
   });
 
-  catSel.innerHTML = `<option value="">All Categories</option>`;
-  cats.forEach((c) => {
-    catSel.innerHTML += `<option value="${c}">${c}</option>`;
-  });
-
-  // keep selected values if still valid
-  if (opts.keep) {
-    if (banks.includes(curBank)) bankSel.value = curBank;
-    if (cats.includes(curCat)) catSel.value = curCat;
+  // keep selected bank if still valid
+  if (banks.includes(curBank)) {
+    bankSel.value = curBank;
   }
 }
 
@@ -425,3 +433,73 @@ toDateInput.addEventListener("change", () => {
 
   applyFiltersTransfer();
 });
+
+function updateCategoryButtonText() {
+  const btn = document.getElementById("categoryDropdownBtn");
+  const checked = document.querySelectorAll(".category-check:checked").length;
+  const total = document.querySelectorAll(".category-check").length;
+
+  if (checked === 0) {
+    btn.textContent = "No Category Selected";
+  } else if (checked === total) {
+    btn.textContent = "All Categories";
+  } else {
+    btn.textContent = `Categories (${checked})`;
+  }
+}
+
+function buildCategoryCheckboxes(rows) {
+  const catWrap = document.getElementById("filterCategoryList");
+
+  catWrap.querySelectorAll(".category-item").forEach((el) => el.remove());
+
+  const categories = [...new Set(rows.map((r) => r.category))];
+
+  categories.forEach((cat) => {
+    const li = document.createElement("li");
+    li.className = "category-item";
+
+    li.innerHTML = `
+      <div class="form-check">
+        <input class="form-check-input category-check"
+          type="checkbox"
+          value="${cat}"
+          checked>
+        <label class="form-check-label">${cat}</label>
+      </div>
+    `;
+
+    catWrap.appendChild(li);
+  });
+
+  // ✅ Bind change event for all checkboxes
+  document.querySelectorAll(".category-check").forEach((cb) => {
+    cb.addEventListener("change", applyFilters);
+  });
+
+  updateCategoryButtonText();
+}
+
+function selectAllCategories() {
+  document.querySelectorAll(".category-check").forEach((cb) => {
+    cb.checked = true;
+  });
+
+  updateCategoryButtonText();
+  applyFilters();
+}
+
+function unselectAllCategories() {
+  document.querySelectorAll(".category-check").forEach((cb) => {
+    cb.checked = false;
+  });
+
+  updateCategoryButtonText();
+  applyFilters();
+}
+
+function getSelectedCategories() {
+  return Array.from(document.querySelectorAll(".category-check:checked")).map(
+    (cb) => cb.value
+  );
+}
