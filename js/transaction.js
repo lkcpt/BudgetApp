@@ -68,7 +68,14 @@ function transact(event) {
 }
 
 const category = {
-  Income: ["Salary", "Not my money", "Sports", "Internal", "Other Income"],
+  Income: [
+    "Salary",
+    "Not my money",
+    "Sports",
+    "Internal",
+    "Money Back",
+    "Other Income",
+  ],
   Expense: [
     "Savings",
     "Investment",
@@ -87,6 +94,7 @@ const category = {
     "Sports",
     "Internal",
     "Gift",
+    "Money Lend",
     "Not my money",
     "Other Expense",
   ],

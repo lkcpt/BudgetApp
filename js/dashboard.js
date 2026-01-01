@@ -239,9 +239,14 @@ function renderBankCards(banks, transactions, month) {
     const net = income - expense;
 
     // For chart
+
+    const bankTxnsForChart = bankTxns.filter(
+      (txn) => String(txn.type || "").toLowerCase() !== "transfer"
+    );
+
     const catMap = {};
     let total = 0;
-    bankTxns.forEach((txn) => {
+    bankTxnsForChart.forEach((txn) => {
       const amt = Number(txn.amount) || 0;
       const cat = txn.category || "Other";
       catMap[cat] = (catMap[cat] || 0) + amt;
@@ -283,8 +288,8 @@ function renderBankCards(banks, transactions, month) {
           ${
             total === 0
               ? `<div class="text-muted mt-3">No transactions</div>`
-              : `<canvas id="${canvasId}" style="max-width:300px; min-height:150px; max-height:300px;" class="my-3"></canvas>
-                 <div id="legend-${idx}" class="mt-2 w-100"></div>`
+              : `<canvas id="${canvasId}" ...></canvas>
+                <div id="legend-${idx}" class="mt-2 w-100"></div>`
           }
         </div>
       </div>

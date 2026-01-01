@@ -151,7 +151,7 @@
         </div>
         <div class="modal-body">
           <input type="hidden" id="editRowId" />
-          <form class="transact-form" onsubmit="return transact(event)" id="transact-form">
+          <form class="transact-form" id="transact-form">
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label">Select Date</label>
@@ -202,18 +202,22 @@
                 <label class="form-label" for="editAmount">Amount</label>
                 <input type="number" class="form-control" id="editAmount" required />
               </div>
+            </div>
           </form>
         </div>
-      </div>
 
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-primary" onclick="updateTransaction()">
-          Update
-        </button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancel
+          </button>
+
+          <button type="button" class="btn btn-primary" onclick="updateTransaction()">
+            Update
+          </button>
+
+        </div>
       </div>
     </div>
-  </div>
   </div>
 
   <div id="page-loader" class="page-loader d-none">

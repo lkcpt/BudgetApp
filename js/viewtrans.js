@@ -3,18 +3,15 @@ let allTransactions = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   loadTransactions();
+
+  ["fromDate", "toDate", "filterBank", "filterInc"].forEach((id) => {
+    document.getElementById(id).addEventListener("change", applyFilters);
+  });
+
   document
     .getElementById("filterCategoryList")
-    .addEventListener("click", (e) => {
-      e.stopPropagation();
-    });
+    .addEventListener("click", (e) => e.stopPropagation());
 });
-
-["fromDate", "toDate", "filterBank", "filterInc", "filterCategory"].forEach(
-  (id) => {
-    document.getElementById(id).addEventListener("change", applyFilters);
-  }
-);
 
 function loadTransactions() {
   lockPage("Fetching transactions...");
@@ -85,6 +82,7 @@ function renderTable(rows) {
         <td class="text-center">${r.amount}</td>
         <td class="text-center">
           <button 
+          type="button"
             class="btn btn-sm btn-warning"
             onclick="openEditModal(${i})"
             ${
@@ -474,7 +472,10 @@ function buildCategoryCheckboxes(rows) {
 
   // ✅ Bind change event for all checkboxes
   document.querySelectorAll(".category-check").forEach((cb) => {
-    cb.addEventListener("change", applyFilters);
+    cb.addEventListener("change", () => {
+      updateCategoryButtonText(); // ✅ sync button text
+      applyFilters();
+    });
   });
 
   updateCategoryButtonText();

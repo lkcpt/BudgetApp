@@ -183,7 +183,7 @@ function openPaymentModal(index) {
   const t = names[index];
   document.getElementById("editRowId").value = t.rowId;
   document.getElementById("payParName").value = t.name;
-  document.getElementById("amount").value = 1000;
+  document.getElementById("amount").value = 1200;
   new bootstrap.Modal(document.getElementById("paymentModal")).show();
 }
 
