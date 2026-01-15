@@ -2,11 +2,30 @@ let transferTransactions = [];
 let allTransactions = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadTransfers();
-});
+  const from = document.getElementById("fromDate-transfer");
+  const to = document.getElementById("toDate-transfer");
 
-["fromDate-transfer", "toDate-transfer"].forEach((id) => {
-  document.getElementById(id).addEventListener("change", applyFiltersTransfer);
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+
+  const current = `${yyyy}-${mm}-${dd}`;
+
+  // Set max date for both inputs
+  from.max = current;
+  to.max = current;
+
+  from.value = `${yyyy}-${mm}-01`; // 1st day of month
+  to.value = `${yyyy}-${mm}-${dd}`; // Today
+
+  loadTransfers(); // ⬅ load after default dates are set
+
+  ["fromDate-transfer", "toDate-transfer"].forEach((id) => {
+    document
+      .getElementById(id)
+      .addEventListener("change", applyFiltersTransfer);
+  });
 });
 
 function loadTransfers() {
@@ -37,8 +56,7 @@ function loadTransfers() {
 
       transferTransactions = groupTransfers(rawTransfers);
 
-      renderTransferTable(transferTransactions);
-      updateTransferSummary(transferTransactions);
+      applyFiltersTransfer();
     })
     .catch(() => {
       unlockPage();
@@ -84,7 +102,7 @@ function renderTransferTable(rows) {
   tbody.innerHTML = "";
 
   if (rows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center">No transfers found</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center">No transfers found</td></tr>`;
     return;
   }
 
@@ -92,13 +110,13 @@ function renderTransferTable(rows) {
     tbody.innerHTML += `
       <tr>
         <td>${i + 1}</td>
-        <td>${new Date(r.time).toLocaleDateString()}</td>
-        <td>${new Date(r.date).toLocaleDateString()}</td>
+        <td>${new Date(r.time).toLocaleDateString("en-GB")}</td>
+        <td>${new Date(r.date).toLocaleDateString("en-GB")}</td>
         <td>${r.fromBank}</td>
         <td>${r.toBank}</td>
         <td >${r.description}</td>
         <td class="text-center">₹${Number(r.amount).toFixed(2)}</td>
-        <td class="text-center">
+        <td class="text-center text-nowrap align-middle">
           <button class="btn btn-sm btn-danger" onclick="deleteTransferUI('${
             r.transferId
           }')">
@@ -173,11 +191,19 @@ function applyFiltersTransfer() {
 }
 
 function resetFiltersTransfer() {
-  document.getElementById("fromDate-transfer").value = "";
-  document.getElementById("toDate-transfer").value = "";
+  const from = document.getElementById("fromDate-transfer");
+  const to = document.getElementById("toDate-transfer");
 
-  renderTransferTable(transferTransactions);
-  updateTransferSummary(transferTransactions);
+  // 🔥 DEFAULT DATE RESET — SAME AS PAGE LOAD
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+
+  from.value = `${yyyy}-${mm}-01`; // 1st of month
+  to.value = `${yyyy}-${mm}-${dd}`; // Today
+
+  applyFiltersTransfer();
 }
 
 function updateTransferSummary(rows) {

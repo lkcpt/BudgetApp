@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     loadParName();
   });
+
   loadParName();
 });
 
@@ -260,20 +261,31 @@ const modalEl = document.getElementById("paymentModal");
 const dateInput = document.getElementById("selectDate");
 
 modalEl.addEventListener("shown.bs.modal", () => {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth();
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
 
-  const first = new Date(y, m, 1);
-  const last = new Date(y, m + 1, 0);
+  const min = `${yyyy}-${mm}-01`;
+  const current = `${yyyy}-${mm}-${dd}`;
 
-  const toYMD = (d) => d.toISOString().split("T")[0];
+  dateInput.min = min;
+  dateInput.max = current;
 
-  dateInput.min = toYMD(first);
-  dateInput.max = toYMD(last);
+  dateInput.value = current;
+  dateInput.addEventListener("change", () => {
+    if (!dateInput.value) return;
 
-  // default to today if empty
-  if (!dateInput.value) {
-    dateInput.value = toYMD(now);
-  }
+    // Convert input to Date
+    const selected = new Date(dateInput.value + "T00:00");
+
+    if (selected > today) {
+      Swal.fire({
+        icon: "warning",
+        title: "Invalid Date",
+        text: "Future dates are not allowed.",
+      });
+      dateInput.value = current; // Reset back to today
+    }
+  });
 });

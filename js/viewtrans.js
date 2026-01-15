@@ -2,7 +2,25 @@ let transactions = [];
 let allTransactions = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadTransactions();
+  // 🔥 SET DEFAULT FROM & TO DATE
+  const from = document.getElementById("fromDate");
+  const to = document.getElementById("toDate");
+
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+
+  const current = `${yyyy}-${mm}-${dd}`;
+
+  // Set max date for both inputs
+  from.max = current;
+  to.max = current;
+
+  from.value = `${yyyy}-${mm}-01`; // 1st day of month
+  to.value = `${yyyy}-${mm}-${dd}`; // Today
+
+  loadTransactions(); // ⬅ load after default dates are set
 
   ["fromDate", "toDate", "filterBank", "filterInc"].forEach((id) => {
     document.getElementById(id).addEventListener("change", applyFilters);
@@ -42,8 +60,7 @@ function loadTransactions() {
       buildCategoryCheckboxes(mainRows);
 
       updateFilterOptions(mainRows);
-      renderTable(mainRows);
-      updateSummary(mainRows);
+      applyFilters();
     })
     .catch(() => {
       unlockPage();
@@ -71,8 +88,8 @@ function renderTable(rows) {
     tbody.innerHTML += `
       <tr>
         <td class="text-center">${i + 1}</td>
-        <td>${new Date(r.time).toLocaleDateString()}</td>
-        <td>${new Date(r.date).toLocaleDateString()}</td>
+        <td>${new Date(r.time).toLocaleDateString("en-GB")}</td>
+        <td>${new Date(r.date).toLocaleDateString("en-GB")}</td>
         <td>${r.bank}</td>
         <td>${r.inc}</td>
         <td class="text-capitalize">${r.type}</td>
@@ -80,7 +97,7 @@ function renderTable(rows) {
         <td>${r.category}</td>
         <td>${r.description}</td>
         <td class="text-center">${r.amount}</td>
-        <td class="text-center">
+        <td class="text-center text-nowrap align-middle">
           <button 
           type="button"
             class="btn btn-sm btn-warning"
@@ -261,21 +278,50 @@ function del(rowId) {
 }
 
 function updateTransaction() {
+  const rowId = document.getElementById("editRowId").value;
+  const date = document.getElementById("editDate").value;
+  const bank = document.getElementById("editBank").value;
+  const inc = document.getElementById("editInc").value;
+  const type = document.getElementById("editType").value;
+  const app = document.getElementById("editApp").value;
+  const category = document.getElementById("editCategory").value;
+  const description = document.getElementById("editDescription").value;
+  const amount = document.getElementById("editAmount").value;
+  if (
+    !rowId ||
+    !date ||
+    !bank ||
+    !inc ||
+    !type ||
+    !app ||
+    !category ||
+    !description ||
+    !amount
+  ) {
+    Swal.fire({
+      icon: "warning",
+      title: "Missing Details",
+      text: "All fields are required. Please fill everything before updating.",
+    });
+    return; // ❌ Stop execution — do not update
+  }
+
   lockPage("Update in Progress...");
+  
   fetch(URL, {
     method: "POST",
     body: new URLSearchParams({
       action: "updateTransaction",
       token: sessionStorage.getItem("token"),
-      rowId: document.getElementById("editRowId").value,
-      date: document.getElementById("editDate").value,
-      bank: document.getElementById("editBank").value,
-      inc: document.getElementById("editInc").value,
-      type: document.getElementById("editType").value,
-      app: document.getElementById("editApp").value,
-      category: document.getElementById("editCategory").value,
-      description: document.getElementById("editDescription").value,
-      amount: document.getElementById("editAmount").value,
+      rowId,
+      date,
+      bank,
+      inc,
+      type,
+      app,
+      category,
+      description,
+      amount,
     }),
   })
     .then((res) => res.json())
@@ -342,24 +388,31 @@ function applyFilters() {
 }
 
 function resetFilters() {
-  document.getElementById("fromDate").value = "";
-  document.getElementById("toDate").value = "";
+  const from = document.getElementById("fromDate");
+  const to = document.getElementById("toDate");
+
+  // 🔥 DEFAULT DATE RESET — SAME AS PAGE LOAD
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+
+  from.value = `${yyyy}-${mm}-01`; // 1st of month
+  to.value = `${yyyy}-${mm}-${dd}`; // Today
+
+  // 🔥 Reset other filters
   document.getElementById("filterBank").value = "";
   document.getElementById("filterInc").value = "";
 
+  // 🔥 Reset category checkboxes
   document.querySelectorAll(".category-check").forEach((cb) => {
     cb.checked = true;
   });
 
-  updateCategoryButtonText(); // ✅ IMPORTANT
+  updateCategoryButtonText();
 
-  const filteredTransactions = allTransactions.filter(
-    (r) => r.type.toLowerCase() !== "transfer"
-  );
-
-  updateFilterOptions(filteredTransactions);
-  renderTable(filteredTransactions);
-  updateSummary(filteredTransactions);
+  // 🔥 Apply filters with the default date range
+  applyFilters();
 }
 
 function updateFilterOptions(rows) {

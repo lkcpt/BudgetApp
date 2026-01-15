@@ -1,3 +1,30 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const date = document.getElementById("date");
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+
+  const current = `${yyyy}-${mm}-${dd}`;
+  date.max = current;
+
+  date.addEventListener("change", () => {
+    if (!date.value) return;
+
+    // Convert input to Date
+    const selected = new Date(date.value + "T00:00");
+
+    if (selected > today) {
+      Swal.fire({
+        icon: "warning",
+        title: "Invalid Date",
+        text: "Future dates are not allowed.",
+      });
+      date.value = current; // Reset back to today
+    }
+  });
+});
+
 function transact(event) {
   event.preventDefault();
   lockPage("Transaction Under Progress.....");
