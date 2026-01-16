@@ -28,7 +28,7 @@ function updateNavbarUser() {
 }
 
 const URL =
-  "https://script.google.com/macros/s/AKfycbwSiDOkjLJwQ0m4dj6QdQP9W2yn4HV5L2u6tfqGSpI-V0N8GZDomXA4jz2IdFSo-dg-/exec";
+  "https://script.google.com/macros/s/AKfycby8rmkmRV5xvPkdttToNMGzz95yLiZYZXjF0rfV2HNSd7sRLDrTtQneMatQ59Tud1Aa/exec";
 
 //Login page Code
 function login(event) {
