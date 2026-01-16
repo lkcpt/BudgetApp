@@ -153,7 +153,10 @@ function renderTable(rows, banks, transactions, month) {
                 <th>S.No</th>
                 <th>Category</th>
                 <th>Amount</th>
+                <th>Paid Amount</th>
+                <th>Balance</th>
                 <th>Action</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -164,17 +167,32 @@ function renderTable(rows, banks, transactions, month) {
                   <td class="text-center">${i + 1}</td>
                   <td>${r.category}</td>
                   <td class="text-center">${r.amount}</td>
+                  <td class="text-center">${r.paidamount}</td>
+                  <td class="text-center">${r.balance}</td>
                   <td class="text-center align-middle">
                       ${
                         String(r.category).toLowerCase() != "minimum balance"
                           ? r.status === "paid"
-                            ? `<span class="badge rounded-pill bg-success">PAID</span>`
+                            ? "-"
                             : r.status === "partly paid"
-                            ? `<button class="btn btn-sm btn-warning" onclick="openBudgetModal(${i})">Pay Again</button><div class="text-success fw-bold">Partly Paid</div>`
-                            : `<button class="btn btn-sm btn-warning" onclick="openBudgetModal(${i})">Pay</button>`
+                            ? `<button class="btn btn-sm btn-warning" onclick="openBudgetModal('${r.rowId}', ${i})"">Pay Again</button>`
+                            : `<div><button class="btn btn-sm btn-warning" onclick="openBudgetModal('${r.rowId}', ${i})"">Pay</button> <button class="btn btn-sm btn-danger" onclick="">
+            <i class="fa fa-trash"></i>
+          </button></div>`
                           : "-"
                       }
                   </td>
+                  <td class="text-center align-middle fw-bold text-capitalize ${
+                    r.status == "unpaid"
+                      ? "text-danger"
+                      : r.status == "paid"
+                      ? "text-success"
+                      : "text-info"
+                  }">${
+                    String(r.category).toLowerCase() != "minimum balance"
+                      ? r.status
+                      : "-"
+                  }</td>
                 </tr>
               `
                 )
@@ -235,9 +253,9 @@ function transact() {
   const type = document.getElementById("type").value;
   const app = document.getElementById("app").value;
   const category = document.getElementById("category").value;
-  const description = document.getElementById("category").value;
+  const description = document.getElementById("description").value;
   const amount = document.getElementById("amount").value;
-  const actual = Number(allBudget[rowId].amount);
+
   let status = "";
 
   if (document.getElementById("paymentRadio1").checked) {
@@ -245,6 +263,9 @@ function transact() {
   } else if (document.getElementById("paymentRadio2").checked) {
     status = "partly paid";
   }
+
+  const balance = fullBudgetAmount - amount;
+  const upamount = Number(paidamount) + Number(amount);
 
   if (
     !rowId ||
@@ -280,6 +301,7 @@ function transact() {
       category: category,
       description: description,
       amount: amount,
+      budgetId: id,
     }),
   })
     .then((res) => res.json())
@@ -296,6 +318,8 @@ function transact() {
             action: "updatebudgetstatus",
             token: sessionStorage.getItem("token"),
             rowId,
+            upamount,
+            balance,
             status,
           }),
         })
@@ -327,17 +351,21 @@ function transact() {
       }
     });
 }
+let id = "";
+let paidamount = 0;
 
-function openBudgetModal(index) {
+function openBudgetModal(rowId, index) {
   const t = allBudget[index];
 
-  document.getElementById("RowId").value = t.rowId;
+  document.getElementById("RowId").value = rowId;
   document.getElementById("bank").value = t.bank;
   document.getElementById("category").value = t.category;
-  document.getElementById("description").value = "" + t.category;
+  document.getElementById("description").value = "Budget - " + t.category;
 
+  id = t.budgetId;
   // store full budget amount
-  fullBudgetAmount = Number(t.amount) || 0;
+  fullBudgetAmount = Number(t.balance) || 0;
+  paidamount = Number(t.paidamount) || 0;
 
   // default part payment enabled
   document.getElementById("paymentRadio2").checked = false;
@@ -401,11 +429,13 @@ function setupPaymentModeHandlers(amountInput) {
   function checkAmountLimit() {
     const val = Number(amountInput.value) || 0;
 
-    if (val > fullBudgetAmount) {
-      warning.innerHTML = `⚠ Maximum allowed amount is ₹${fullBudgetAmount}`;
+    if (val >= fullBudgetAmount) {
+      warning.innerHTML = `⚠ Maximum allowed amount is ₹${
+        fullBudgetAmount - 1
+      }`;
       warning.style.display = "block";
 
-      amountInput.value = fullBudgetAmount;
+      amountInput.value = fullBudgetAmount - 1;
     } else {
       warning.style.display = "none";
     }

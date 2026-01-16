@@ -84,6 +84,7 @@ function renderTable(rows) {
 
   rows.forEach((r, i) => {
     const isCarParking = r.category?.toLowerCase() === "parking payment";
+    const isBudget = r.budgetId != "";
 
     tbody.innerHTML += `
       <tr>
@@ -104,6 +105,8 @@ function renderTable(rows) {
             onclick="openEditModal(${i})"
             ${
               isCarParking
+                ? "hidden title='Editing disabled for Car Parking'"
+                : isBudget
                 ? "hidden title='Editing disabled for Car Parking'"
                 : ""
             }
@@ -307,7 +310,7 @@ function updateTransaction() {
   }
 
   lockPage("Update in Progress...");
-  
+
   fetch(URL, {
     method: "POST",
     body: new URLSearchParams({
