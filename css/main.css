@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+.navbar {
+    margin-top: env(safe-area-inset-top);
+}
+
 .login-page {
   font-family: sans-serif;
 }
