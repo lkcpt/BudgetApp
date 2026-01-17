@@ -2,51 +2,32 @@ let allBudget = [];
 let allBanks = [];
 let allTransactions = [];
 
+const today = new Date();
+const yyyy = today.getFullYear();
+const mm = String(today.getMonth() + 1).padStart(2, "0");
+const dd = String(today.getDate()).padStart(2, "0");
+const current = normalizeMonth(`${yyyy}-${mm}`);
+
+const currentdate = `${yyyy}-${mm}-${dd}`;
+
 function normalizeMonth(m) {
   const [y, mn] = m.split("-");
   return `${y}-${mn.padStart(2, "0")}`;
 }
 
+function formatMonth(value) {
+  const [year, month] = value.split("-");
+  const date = new Date(year, Number(month) - 1);
+  const monthName = date.toLocaleString("en-US", { month: "long" });
+  return `${monthName}, ${year}`;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, "0");
-  const fm = document.getElementById("filterMonth");
-  const current = normalizeMonth(`${yyyy}-${mm}`);
-  fm.value = current;
-  fm.min = current;
-  fm.max = current;
-
-  fm.addEventListener("input", () => {
-    if (fm.value !== current) {
-      fm.value = current;
-      Swal.fire(
-        "Invalid Month",
-        "You can only select the current month.",
-        "warning"
-      );
-    }
-  });
-
+  const monthContainer = document.getElementById("displaymonth");
+  monthContainer.innerHTML = ` Month :<span class="text-success"> ${formatMonth(
+    current
+  )}</span> `;
   loadBudget();
-});
-
-document.getElementById("filterMonth").addEventListener("change", () => {
-  const input = document.getElementById("filterMonth");
-
-  // Reset to current month if cleared
-  if (!input.value) {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const current = `${yyyy}-${mm}`;
-    input.value = current;
-    renderTable(filterBudget(current), allBanks, allTransactions, current);
-    return;
-  }
-
-  const month = normalizeMonth(input.value);
-  renderTable(filterBudget(month), allBanks, allTransactions, month);
 });
 
 function filterBudget(month) {
@@ -70,7 +51,7 @@ function loadBudget() {
       body: new URLSearchParams({
         action: "getBankBalances",
         token,
-        month: document.getElementById("filterMonth").value,
+        month: current,
       }),
     }).then((res) => res.json()),
 
@@ -91,7 +72,7 @@ function loadBudget() {
       allBanks = bankRes.data || [];
       allTransactions = txnRes.data || [];
 
-      const month = document.getElementById("filterMonth").value;
+      const month = current;
       renderTable(filterBudget(month), allBanks, allTransactions, month);
     })
     .catch(() => {
@@ -103,16 +84,6 @@ function loadBudget() {
 function renderTable(rows, banks, transactions, month) {
   const container = document.getElementById("bankTables");
   container.innerHTML = "";
-
-  if (rows.length === 0) {
-    container.innerHTML = `
-      <div class="text-center fw-bold py-3 container rounded shadow-sm">
-        No Budget Found
-      </div>
-    `;
-    return;
-  }
-
   // Group rows by bank
   const bankGroups = {};
   rows.forEach((r) => {
@@ -125,9 +96,14 @@ function renderTable(rows, banks, transactions, month) {
     const bal = calculateBankBalance(bank, banks, transactions, month);
 
     // 🔥 Sum all budgets for this bank in the selected month
-    const totalBudget = items
-      .filter((b) => String(b.status).toLowerCase() !== "paid")
-      .reduce((sum, b) => sum + Number(b.amount || 0), 0);
+    const totalBudget = items.reduce(
+      (sum, b) => sum + Number(b.balance || 0),
+      0
+    );
+
+    const pa = items.reduce((sum, b) => sum + Number(b.paidamount || 0), 0);
+
+    const ba = items.reduce((sum, b) => sum + Number(b.balance || 0), 0);
 
     const overallBudget = items.reduce(
       (sum, b) => sum + Number(b.amount || 0),
@@ -137,17 +113,33 @@ function renderTable(rows, banks, transactions, month) {
     // 🔥 Available balance after budget
     const availableBalance = bal - totalBudget;
 
+    const sortedItems = [
+      ...items.filter(
+        (r) => String(r.category).toLowerCase() !== "minimum balance"
+      ),
+      ...items.filter(
+        (r) => String(r.category).toLowerCase() === "minimum balance"
+      ),
+    ];
+
     const html = `
       <div class="p-3 rounded mb-4" style="box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;">
         <h2 class="mt-2 mb-2"><img src="images/${bank}.png"
         height="35" class="me-2"> ${bank}</h2>
         <div class="mb-2">
           <span class="fw-bold">Current Balance:</span>
-          <span class="ms-2">₹${bal.toFixed(2)}</span>
+          <span class="ms-2">₹ ${bal.toFixed(2)}</span>
         </div>
-
+        <h5 class="mb-2 text">
+          <span class="fw-bold">Mine:</span>
+          <span class="ms-2 ${
+            availableBalance.toFixed(2) <= 0 ? "text-danger" : "text-success"
+          } fw-bold">
+                    ₹ ${availableBalance.toFixed(2)}
+                  </span>
+        </h5>
         <div class="table-responsive mb-3">
-          <table class="table table-bordered table-striped">
+          <table class="table table-bordered table-striped align-middle">
             <thead class="text-center table-warning">
               <tr>
                 <th>S.No</th>
@@ -160,23 +152,27 @@ function renderTable(rows, banks, transactions, month) {
               </tr>
             </thead>
             <tbody>
-              ${items
+              ${sortedItems
                 .map(
                   (r, i) => `
-                <tr>
+                <tr class="${
+                  String(r.category).toLowerCase() == "minimum balance"
+                    ? "table-info"
+                    : ""
+                }">
                   <td class="text-center">${i + 1}</td>
                   <td>${r.category}</td>
-                  <td class="text-center">${r.amount}</td>
-                  <td class="text-center">${r.paidamount}</td>
-                  <td class="text-center">${r.balance}</td>
+                  <td class="text-center">₹ ${r.amount}</td>
+                  <td class="text-center">₹ ${r.paidamount}</td>
+                  <td class="text-center">₹ ${r.balance}</td>
                   <td class="text-center align-middle">
                       ${
                         String(r.category).toLowerCase() != "minimum balance"
                           ? r.status === "paid"
                             ? "-"
                             : r.status === "partly paid"
-                            ? `<button class="btn btn-sm btn-warning" onclick="openBudgetModal('${r.rowId}', ${i})"">Pay Again</button>`
-                            : `<div><button class="btn btn-sm btn-warning" onclick="openBudgetModal('${r.rowId}', ${i})"">Pay</button> <button class="btn btn-sm btn-danger" onclick="">
+                            ? `<button class="btn btn-sm btn-warning" onclick="openBudgetModal('${r.budgetId}')">Pay Again</button>`
+                            : `<div class="text-nowrap"><button class="btn btn-sm btn-warning" onclick="openBudgetModal('${r.budgetId}')"">Pay</button> <button class="btn btn-sm btn-danger" onclick="delbudget('${r.rowId}')">
             <i class="fa fa-trash"></i>
           </button></div>`
                           : "-"
@@ -197,18 +193,14 @@ function renderTable(rows, banks, transactions, month) {
               `
                 )
                 .join("")}
-                <tr>
-                <td colspan="2" class="text-center fw-bold">Total Budget</td>
-                <td class="text-center" colspan="2">${overallBudget}</td>
-                </tr>
-                <tr>
-                <td colspan="2" class="text-center fw-bold">Mine</td>
-                <td class="text-center ${
-                  availableBalance.toFixed(2) <= 0
-                    ? "text-danger"
-                    : "text-success"
-                } fw-bold" colspan="2">${availableBalance.toFixed(2)}</td>
-                </tr>
+                <tr class="text-center table-dark">
+                  <td colspan="2" class=" fw-bold">Total Budget</td>
+                  <td >₹ ${overallBudget}</td>
+                  <td >₹ ${pa}</td>
+                  <td >₹ ${ba}</td>
+                  <td >-</td>
+                  <td >-</td>
+                </tr> 
             </tbody>
           </table>
         </div>
@@ -273,12 +265,18 @@ function transact() {
     !bank ||
     !inc ||
     !type ||
-    !app ||
     !category ||
     !description ||
     !amount ||
     !status
   ) {
+    Swal.fire({
+      icon: "warning",
+      title: "Missing Details",
+      text: "All fields are required. Please fill everything before updating.",
+    });
+    return; // ❌ Stop execution — do not update
+  } else if (type == "UPI" && !app) {
     Swal.fire({
       icon: "warning",
       title: "Missing Details",
@@ -354,13 +352,38 @@ function transact() {
 let id = "";
 let paidamount = 0;
 
-function openBudgetModal(rowId, index) {
-  const t = allBudget[index];
+function openBudgetModal(budgetId) {
+  const t = allBudget.find((b) => String(b.budgetId) === String(budgetId));
 
-  document.getElementById("RowId").value = rowId;
+  if (!t) {
+    Swal.fire("Error", "Budget item not found", "error");
+    return;
+  }
+
+  const dateInput = document.getElementById("date");
+
+  dateInput.max = currentdate;
+  dateInput.value = currentdate;
+  document.getElementById("RowId").value = t.rowId;
   document.getElementById("bank").value = t.bank;
   document.getElementById("category").value = t.category;
   document.getElementById("description").value = "Budget - " + t.category;
+
+  dateInput.addEventListener("change", () => {
+    if (!dateInput.value) return;
+
+    // Convert input to Date
+    const selected = new Date(dateInput.value + "T00:00");
+
+    if (selected > today) {
+      Swal.fire({
+        icon: "warning",
+        title: "Invalid Date",
+        text: "Future dates are not allowed.",
+      });
+      dateInput.value = currentdate; // Reset back to today
+    }
+  });
 
   id = t.budgetId;
   // store full budget amount
@@ -440,4 +463,42 @@ function setupPaymentModeHandlers(amountInput) {
       warning.style.display = "none";
     }
   }
+}
+
+function delbudget(rowId) {
+  Swal.fire({
+    title: "Are you sure?",
+    text: "This Budget item will be deleted",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, delete it!",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      lockPage("Deleting Data...");
+      fetch(URL, {
+        method: "POST",
+        body: new URLSearchParams({
+          action: "deleteBudget",
+          token: sessionStorage.getItem("token"),
+          rowId: rowId,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          unlockPage();
+          if (data.status === "success") {
+            Swal.fire({
+              icon: "success",
+              title: "Deleted!",
+              text: "Transaction Deleted Successfully",
+            }).then(() => {
+              loadBudget();
+            });
+          } else {
+            unlockPage();
+            Swal.fire("Error", data.message, "error");
+          }
+        });
+    }
+  });
 }

@@ -1,24 +1,56 @@
 let transactions = [];
 let allTransactions = [];
 
+// 🔥 SET DEFAULT FROM & TO DATE
+const from = document.getElementById("fromDate");
+const to = document.getElementById("toDate");
+
+const today = new Date();
+const yyyy = today.getFullYear();
+const mm = String(today.getMonth() + 1).padStart(2, "0");
+const dd = String(today.getDate()).padStart(2, "0");
+
+const current = `${yyyy}-${mm}-${dd}`;
+
 document.addEventListener("DOMContentLoaded", () => {
-  // 🔥 SET DEFAULT FROM & TO DATE
-  const from = document.getElementById("fromDate");
-  const to = document.getElementById("toDate");
-
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, "0");
-  const dd = String(today.getDate()).padStart(2, "0");
-
-  const current = `${yyyy}-${mm}-${dd}`;
-
   // Set max date for both inputs
   from.max = current;
   to.max = current;
 
   from.value = `${yyyy}-${mm}-01`; // 1st day of month
   to.value = `${yyyy}-${mm}-${dd}`; // Today
+
+  from.addEventListener("change", () => {
+    if (!from.value) return;
+
+    // Convert input to Date
+    const selected = new Date(from.value + "T00:00");
+
+    if (selected > today) {
+      Swal.fire({
+        icon: "warning",
+        title: "Invalid Date",
+        text: "Future dates are not allowed.",
+      });
+      from.value = current; // Reset back to today
+    }
+  });
+
+  to.addEventListener("change", () => {
+    if (!to.value) return;
+
+    // Convert input to Date
+    const selected = new Date(to.value + "T00:00");
+
+    if (selected > today) {
+      Swal.fire({
+        icon: "warning",
+        title: "Invalid Date",
+        text: "Future dates are not allowed.",
+      });
+      to.value = current; // Reset back to today
+    }
+  });
 
   loadTransactions(); // ⬅ load after default dates are set
 
@@ -123,10 +155,28 @@ function renderTable(rows) {
 
 function openEditModal(index) {
   const t = transactions[index];
+  const dateInput = document.getElementById("editDate");
 
+  dateInput.max = current;
   document.getElementById("editRowId").value = t.rowId;
-  document.getElementById("editDate").value = formatDateForInput(t.date);
+  dateInput.value = formatDateForInput(t.date);
   document.getElementById("editBank").value = t.bank;
+
+  dateInput.addEventListener("change", () => {
+    if (!dateInput.value) return;
+
+    // Convert input to Date
+    const selected = new Date(dateInput.value + "T00:00");
+
+    if (selected > today) {
+      Swal.fire({
+        icon: "warning",
+        title: "Invalid Date",
+        text: "Future dates are not allowed.",
+      });
+      dateInput.value = current; // Reset back to today
+    }
+  });
 
   // 1️⃣ Income / Expense
   document.getElementById("editInc").value = t.inc;
@@ -296,11 +346,17 @@ function updateTransaction() {
     !bank ||
     !inc ||
     !type ||
-    !app ||
     !category ||
     !description ||
     !amount
   ) {
+    Swal.fire({
+      icon: "warning",
+      title: "Missing Details",
+      text: "All fields are required. Please fill everything before updating.",
+    });
+    return; // ❌ Stop execution — do not update
+  } else if (type == "UPI" && !app) {
     Swal.fire({
       icon: "warning",
       title: "Missing Details",
