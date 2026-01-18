@@ -9,6 +9,7 @@ const dd = String(today.getDate()).padStart(2, "0");
 const current = normalizeMonth(`${yyyy}-${mm}`);
 
 const currentdate = `${yyyy}-${mm}-${dd}`;
+const mindate = `${yyyy}-${mm}-01`;
 
 function normalizeMonth(m) {
   const [y, mn] = m.split("-");
@@ -25,8 +26,9 @@ function formatMonth(value) {
 document.addEventListener("DOMContentLoaded", () => {
   const monthContainer = document.getElementById("displaymonth");
   monthContainer.innerHTML = ` Month :<span class="text-success"> ${formatMonth(
-    current
+    current,
   )}</span> `;
+
   loadBudget();
 });
 
@@ -83,6 +85,7 @@ function loadBudget() {
 
 function renderTable(rows, banks, transactions, month) {
   const container = document.getElementById("bankTables");
+  let mine = 0;
   container.innerHTML = "";
   // Group rows by bank
   const bankGroups = {};
@@ -93,21 +96,28 @@ function renderTable(rows, banks, transactions, month) {
 
   Object.keys(bankGroups).forEach((bank) => {
     const items = bankGroups[bank];
-    const bal = calculateBankBalance(bank, banks, transactions, month);
+    const { opening, bal } = calculateBankBalance(
+      bank,
+      banks,
+      transactions,
+      month,
+    );
 
     // 🔥 Sum all budgets for this bank in the selected month
     const totalBudget = items.reduce(
       (sum, b) => sum + Number(b.balance || 0),
-      0
+      0,
     );
 
     const pa = items.reduce((sum, b) => sum + Number(b.paidamount || 0), 0);
 
     const ba = items.reduce((sum, b) => sum + Number(b.balance || 0), 0);
 
+    mine += Number(ba || 0);
+
     const overallBudget = items.reduce(
       (sum, b) => sum + Number(b.amount || 0),
-      0
+      0,
     );
 
     // 🔥 Available balance after budget
@@ -115,10 +125,10 @@ function renderTable(rows, banks, transactions, month) {
 
     const sortedItems = [
       ...items.filter(
-        (r) => String(r.category).toLowerCase() !== "minimum balance"
+        (r) => String(r.category).toLowerCase() !== "minimum balance",
       ),
       ...items.filter(
-        (r) => String(r.category).toLowerCase() === "minimum balance"
+        (r) => String(r.category).toLowerCase() === "minimum balance",
       ),
     ];
 
@@ -126,6 +136,10 @@ function renderTable(rows, banks, transactions, month) {
       <div class="p-3 rounded mb-4" style="box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;">
         <h2 class="mt-2 mb-2"><img src="images/${bank}.png"
         height="35" class="me-2"> ${bank}</h2>
+        <div class="mb-2">
+Opening Balance:
+          <span class="ms-2">₹ ${opening}</span>
+        </div>
         <div class="mb-2">
           <span class="fw-bold">Current Balance:</span>
           <span class="ms-2">₹ ${bal.toFixed(2)}</span>
@@ -171,8 +185,8 @@ function renderTable(rows, banks, transactions, month) {
                           ? r.status === "paid"
                             ? "-"
                             : r.status === "partly paid"
-                            ? `<button class="btn btn-sm btn-warning" onclick="openBudgetModal('${r.budgetId}')">Pay Again</button>`
-                            : `<div class="text-nowrap"><button class="btn btn-sm btn-warning" onclick="openBudgetModal('${r.budgetId}')"">Pay</button> <button class="btn btn-sm btn-danger" onclick="delbudget('${r.rowId}')">
+                              ? `<button class="btn btn-sm btn-warning" onclick="openBudgetModal('${r.budgetId}')">Pay Again</button>`
+                              : `<div class="text-nowrap"><button class="btn btn-sm btn-warning" onclick="openBudgetModal('${r.budgetId}')"">Pay</button> <button class="btn btn-sm btn-danger" onclick="delbudget('${r.rowId}')">
             <i class="fa fa-trash"></i>
           </button></div>`
                           : "-"
@@ -182,15 +196,15 @@ function renderTable(rows, banks, transactions, month) {
                     r.status == "unpaid"
                       ? "text-danger"
                       : r.status == "paid"
-                      ? "text-success"
-                      : "text-info"
+                        ? "text-success"
+                        : "text-info"
                   }">${
                     String(r.category).toLowerCase() != "minimum balance"
                       ? r.status
                       : "-"
                   }</td>
                 </tr>
-              `
+              `,
                 )
                 .join("")}
                 <tr class="text-center table-dark">
@@ -209,11 +223,23 @@ function renderTable(rows, banks, transactions, month) {
 
     container.innerHTML += html;
   });
+  const mineContainer = document.getElementById("mine");
+  mineContainer.classList.remove("bg-success", "bg-danger", "bg-primary");
+
+  // Apply based on value
+  if (mine > 0) {
+    mineContainer.classList.add("bg-success");
+  } else if (mine < 0) {
+    mineContainer.classList.add("bg-danger");
+  } else {
+    mineContainer.classList.add("bg-primary");
+  }
+  mineContainer.innerHTML = ` Total Mine : ₹ ${mine.toFixed(2)} `;
 }
 
 function calculateBankBalance(bankName, banks, transactions, month) {
   const bank = banks.find(
-    (b) => b.bank.toLowerCase() === bankName.toLowerCase()
+    (b) => b.bank.toLowerCase() === bankName.toLowerCase(),
   );
   if (!bank) return 0;
 
@@ -233,8 +259,8 @@ function calculateBankBalance(bankName, banks, transactions, month) {
     if (txn.inc === "Income") income += Number(txn.amount) || 0;
     if (txn.inc === "Expense") expense += Number(txn.amount) || 0;
   });
-
-  return opening + income - expense;
+  let bal = opening + income - expense;
+  return { opening, bal };
 }
 
 function transact() {
@@ -305,7 +331,7 @@ function transact() {
     .then((res) => res.json())
     .then((data) => {
       bootstrap.Modal.getInstance(
-        document.getElementById("BudgetModal")
+        document.getElementById("BudgetModal"),
       ).hide();
       if (data.status === "success") {
         const form = document.getElementById("budgettemp-form");
@@ -361,7 +387,7 @@ function openBudgetModal(budgetId) {
   }
 
   const dateInput = document.getElementById("date");
-
+  dateInput.min = mindate;
   dateInput.max = currentdate;
   dateInput.value = currentdate;
   document.getElementById("RowId").value = t.rowId;
@@ -374,12 +400,13 @@ function openBudgetModal(budgetId) {
 
     // Convert input to Date
     const selected = new Date(dateInput.value + "T00:00");
+    const mind = new Date(mindate + "T00:00");
 
-    if (selected > today) {
+    if (selected > today || selected < mind) {
       Swal.fire({
         icon: "warning",
         title: "Invalid Date",
-        text: "Future dates are not allowed.",
+        text: "Transactions in current month only allowed",
       });
       dateInput.value = currentdate; // Reset back to today
     }
