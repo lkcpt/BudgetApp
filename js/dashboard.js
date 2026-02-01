@@ -1,20 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const m = document.getElementById("dash-month");
   const now = new Date();
   const cur = now.toISOString().slice(0, 7);
+  loadBankCards(cur);
+  const monthContainer = document.getElementById("displaymonth");
+  monthContainer.innerHTML = ` Month :<span class="text-success"> ${formatMonth(
+    current,
+  )}</span> `;
 
-  m.value = cur;
-
-  m.addEventListener("change", () => {
-    if (!m.value) {
-      m.value = cur;
-      loadBankCards(m.value); // 🔒 restore if cleared
-      return;
-    }
-    loadBankCards(m.value);
-  });
-
-  loadBankCards(m.value);
+  loadBudget();
 });
 
 let bankCharts = [];
@@ -45,7 +38,6 @@ async function loadBankCards(month) {
 
   if (bankRes.status === "success" && txnRes.status === "success") {
     renderTotalBalance(bankRes.data, txnRes.data, month);
-    renderBankCards(bankRes.data, txnRes.data, month);
   }
 }
 
@@ -94,7 +86,9 @@ function renderTotalBalance(banks, transactions, month) {
 
   const filteredTxns = transactions.filter((t) => {
     const d = new Date(t.date);
-    return d >= start && d < end && t.type.toLowerCase() !== "transfer";
+    return (
+      d >= start && d < end && String(t.type || "").toLowerCase() !== "transfer"
+    );
   });
 
   const catMap = {};
@@ -134,9 +128,9 @@ function renderTotalBalance(banks, transactions, month) {
             <h6 class="text-nowrap mb-1">Overall Transactions</h6>
             <h6 class="mb-1 ">
               Net: <span class="${netClass}">₹${net.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}</span>
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}</span>
             </h6>
             <h6 class="mb-1 ">Income: <small class="text-success">
               ₹${totalIncome.toLocaleString(undefined, {
@@ -206,129 +200,6 @@ function renderTotalBalance(banks, transactions, month) {
   }
 }
 
-function renderBankCards(banks, transactions, month) {
-  const wrap = document.getElementById("bank-cards");
-  wrap.innerHTML = "";
-
-  bankCharts.forEach((c) => c.destroy());
-  bankCharts = [];
-
-  const [y, m] = month.split("-");
-  const start = new Date(y, m - 1, 1);
-  const end = new Date(y, m, 1);
-
-  banks.forEach((b, idx) => {
-    // Only transactions for this bank and NOT transfers
-    // All transactions for this bank (including transfers)
-    const bankTxns = transactions
-      .filter((txn) => txn.bank === b.bank)
-      .filter((txn) => {
-        const d = new Date(txn.date);
-        return d >= start && d < end;
-      });
-
-    let income = 0;
-    let expense = 0;
-
-    bankTxns.forEach((txn) => {
-      const amt = Number(txn.amount) || 0;
-      if (txn.inc === "Income") income += amt;
-      if (txn.inc === "Expense") expense += amt;
-    });
-
-    const net = income - expense;
-
-    // For chart
-
-    const bankTxnsForChart = bankTxns.filter(
-      (txn) => String(txn.type || "").toLowerCase() !== "transfer"
-    );
-
-    const catMap = {};
-    let total = 0;
-    bankTxnsForChart.forEach((txn) => {
-      const amt = Number(txn.amount) || 0;
-      const cat = txn.category || "Other";
-      catMap[cat] = (catMap[cat] || 0) + amt;
-      total += amt;
-    });
-
-    const canvasId = `chart${idx}`;
-    const col = document.createElement("div");
-    col.className = "col-md-4 col-lg-3 col-12 mb-3";
-
-    col.innerHTML = `
-      <div class="card shadow-sm h-100">
-        <div class="card-body d-flex flex-column align-items-center">
-          <h6>${b.bank}</h6>
-          <small>Opening: ₹${b.opening.toFixed(2)}</small>
-          <h5 class="my-2">₹${b.current.toFixed(2)}</h5>
-
-          <div class="w-100 text-center small mb-2">
-            <h6>Transactions</h6>
-            <div>Income: <strong class="text-success">₹${income.toFixed(
-              2
-            )}</strong></div>
-            <div>Expense: <strong class="text-danger">₹${expense.toFixed(
-              2
-            )}</strong></div>
-            <div>
-              Net: <strong class="${
-                net > 0
-                  ? "text-success"
-                  : net < 0
-                  ? "text-danger"
-                  : "text-muted"
-              }">
-                ₹${net.toFixed(2)}
-              </strong>
-            </div>
-          </div>
-
-          ${
-            total === 0
-              ? `<div class="text-muted mt-3">No transactions</div>`
-              : `<canvas id="${canvasId}" ...></canvas>
-                <div id="legend-${idx}" class="mt-2 w-100"></div>`
-          }
-        </div>
-      </div>
-    `;
-
-    wrap.appendChild(col);
-
-    if (total === 0) return;
-
-    const ctx = document.getElementById(canvasId).getContext("2d");
-    const colors = generateColors(Object.keys(catMap).length);
-    const chart = new Chart(ctx, {
-      type: "pie",
-      data: {
-        labels: Object.keys(catMap),
-        datasets: [{ data: Object.values(catMap), backgroundColor: colors }],
-      },
-      options: { responsive: true, plugins: { legend: { display: false } } },
-    });
-
-    const legendDiv = document.getElementById(`legend-${idx}`);
-    Object.keys(catMap).forEach((cat, i) => {
-      const amt = catMap[cat];
-      const percent = ((amt / total) * 100).toFixed(2);
-      const item = document.createElement("div");
-      item.className = "d-flex align-items-center mb-1";
-      item.innerHTML = `
-        <div style="width:16px; height:16px; background-color:${
-          colors[i]
-        }; margin-right:8px;"></div>
-        <span>${cat}: ₹${amt.toFixed(2)} (${percent}%)</span>
-      `;
-      legendDiv.appendChild(item);
-    });
-
-    bankCharts.push(chart);
-  });
-}
-
 // Utility to generate random colors for pie slices
 function generateColors(n) {
   const colors = [];
@@ -337,3 +208,242 @@ function generateColors(n) {
   }
   return colors;
 }
+
+let allBudget = [];
+let allBanks = [];
+let allTransactions = [];
+
+const today = new Date();
+const yyyy = today.getFullYear();
+const mm = String(today.getMonth() + 1).padStart(2, "0");
+const dd = String(today.getDate()).padStart(2, "0");
+const current = normalizeMonth(`${yyyy}-${mm}`);
+
+const currentdate = `${yyyy}-${mm}-${dd}`;
+const mindate = `${yyyy}-${mm}-01`;
+
+function normalizeMonth(m) {
+  const [y, mn] = m.split("-");
+  return `${y}-${mn.padStart(2, "0")}`;
+}
+
+function formatMonth(value) {
+  const [year, month] = value.split("-");
+  const date = new Date(year, Number(month) - 1);
+  const monthName = date.toLocaleString("en-US", { month: "long" });
+  return `${monthName}, ${year}`;
+}
+
+document.addEventListener("DOMContentLoaded", () => {});
+
+function filterBudget(month) {
+  return allBudget.filter((r) => r.month === month);
+}
+
+function loadBudget() {
+  lockPage("Fetching budgets...");
+
+  const token = sessionStorage.getItem("token");
+
+  // Fetch budget, bank balances, and transactions together
+  Promise.all([
+    fetch(URL, {
+      method: "POST",
+      body: new URLSearchParams({ action: "getBudget", token }),
+    }).then((res) => res.json()),
+
+    fetch(URL, {
+      method: "POST",
+      body: new URLSearchParams({
+        action: "getBankBalances",
+        token,
+        month: current,
+      }),
+    }).then((res) => res.json()),
+
+    fetch(URL, {
+      method: "POST",
+      body: new URLSearchParams({ action: "getTransactions", token }),
+    }).then((res) => res.json()),
+  ])
+    .then(([budgetRes, bankRes, txnRes]) => {
+      unlockPage();
+
+      if (budgetRes.status !== "success") {
+        Swal.fire("Error", budgetRes.message, "error");
+        return;
+      }
+
+      allBudget = budgetRes.data;
+      allBanks = bankRes.data || [];
+      allTransactions = txnRes.data || [];
+
+      const month = current;
+      renderTable(filterBudget(month), allBanks, allTransactions, month);
+    })
+    .catch((err) => {
+      unlockPage();
+      console.error("LOAD BUDGET ERROR 👉", err);
+      Swal.fire("Error", err?.message || "Failed to load data", "error");
+    });
+}
+
+function renderTable(rows, banks, transactions, month) {
+  const container = document.getElementById("bankTables");
+  let mine = 0;
+  container.innerHTML = "";
+  // Group rows by bank
+  const bankGroups = {};
+  rows.forEach((r) => {
+    if (!bankGroups[r.bank]) bankGroups[r.bank] = [];
+    bankGroups[r.bank].push(r);
+  });
+
+  Object.keys(bankGroups).forEach((bank) => {
+    const items = bankGroups[bank];
+    const { opening, bal } = calculateBankBalance(
+      bank,
+      banks,
+      transactions,
+      month,
+    );
+
+    // 🔥 Sum all budgets for this bank in the selected month
+    const totalBudget = items.reduce(
+      (sum, b) => sum + Number(b.balance || 0),
+      0,
+    );
+
+    const pa = items.reduce((sum, b) => sum + Number(b.paidamount || 0), 0);
+
+    const ba = items.reduce((sum, b) => sum + Number(b.balance || 0), 0);
+
+    const overallBudget = items.reduce(
+      (sum, b) => sum + Number(b.amount || 0),
+      0,
+    );
+
+    // 🔥 Available balance after budget
+    const availableBalance = bal - totalBudget;
+
+    mine += Number(availableBalance || 0);
+
+    const sortedItems = [
+      ...items.filter(
+        (r) => String(r.category).toLowerCase() !== "minimum balance",
+      ),
+      ...items.filter(
+        (r) => String(r.category).toLowerCase() === "minimum balance",
+      ),
+    ];
+
+    const html = `
+      <div class="p-3 rounded mb-4 mb-4 col-12 col-md-8 col-lg-9" style="box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;">
+        <h2 class="mt-2 mb-2"><img src="images/${bank}.png"
+        height="35" class="me-2"> ${bank}</h2>
+        <div class="mb-2">
+Opening Balance:
+          <span class="ms-2">₹ ${opening}</span>
+        </div>
+        <div class="mb-2">
+          <span class="fw-bold">Current Balance:</span>
+          <span class="ms-2">₹ ${bal.toFixed(2)}</span>
+        </div>
+        <h5 class="mb-2 text">
+          <span class="fw-bold">Mine:</span>
+          <span class="ms-2 ${
+            availableBalance.toFixed(2) <= 0 ? "text-danger" : "text-success"
+          } fw-bold">
+                    ₹ ${availableBalance.toFixed(2)}
+                  </span>
+        </h5>
+        <div class="table-responsive mb-3">
+          <table class="table table-bordered table-striped align-middle">
+            <thead class="text-center table-warning">
+              <tr>
+                <th>S.No</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Paid Amount</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${sortedItems
+                .map(
+                  (r, i) => `
+                <tr class="${
+                  String(r.category).toLowerCase() == "minimum balance"
+                    ? "table-info"
+                    : ""
+                }">
+                  <td class="text-center">${i + 1}</td>
+                  <td>${r.category}</td>
+                  <td class="text-center">₹ ${r.amount}</td>
+                  <td class="text-center">₹ ${r.paidamount}</td>
+                  <td class="text-center">₹ ${r.balance}</td>
+                  
+                </tr>
+              `,
+                )
+                .join("")}
+                <tr class="text-center table-dark">
+                  <td colspan="2" class=" fw-bold">Total Budget</td>
+                  <td >₹ ${overallBudget}</td>
+                  <td >₹ ${pa}</td>
+                  <td >₹ ${ba}</td>
+                </tr> 
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    container.innerHTML += html;
+  });
+  const mineContainer = document.getElementById("mine");
+  mineContainer.classList.remove("bg-success", "bg-danger", "bg-primary");
+
+  // Apply based on value
+  if (mine > 0) {
+    mineContainer.classList.add("bg-success");
+  } else if (mine < 0) {
+    mineContainer.classList.add("bg-danger");
+  } else {
+    mineContainer.classList.add("bg-primary");
+  }
+  mineContainer.innerHTML = ` Total Mine : ₹ ${mine.toFixed(2)} `;
+}
+
+function calculateBankBalance(bankName, banks, transactions, month) {
+  const bank = banks.find(
+    (b) => b.bank.toLowerCase() === bankName.toLowerCase(),
+  );
+
+  if (!bank) return { opening: 0, bal: 0 };
+
+  const opening = Number(bank.opening) || 0;
+  const [y, m] = month.split("-").map(Number);
+  const start = new Date(y, m - 1, 1);
+  const end = new Date(y, m, 1);
+
+  let income = 0,
+    expense = 0;
+
+  transactions.forEach((txn) => {
+    if (!txn.bank || txn.bank.toLowerCase() !== bankName.toLowerCase()) return;
+    const d = new Date(txn.date);
+    if (d < start || d >= end) return;
+
+    if (txn.inc === "Income") income += Number(txn.amount) || 0;
+    if (txn.inc === "Expense") expense += Number(txn.amount) || 0;
+  });
+
+  const bal = opening + income - expense;
+  return { opening, bal };
+}
+
+let id = "";
+let paidamount = 0;
+
+let fullBudgetAmount = 0;

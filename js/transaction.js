@@ -98,13 +98,12 @@ const category = {
   Income: [
     "Salary",
     "Not my money",
-    "Sports",
+    "In Sports",
     "Internal",
     "Money Back",
     "Other Income",
   ],
   Expense: [
-    "Investment",
     "Food",
     "Medicals",
     "Trip",
@@ -112,7 +111,7 @@ const category = {
     "Entertainment",
     "Electronics & Accessories",
     "Fasion",
-    "Sports",
+    "Ex Sports",
     "Internal",
     "Gift",
     "Money Lend",

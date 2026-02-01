@@ -113,8 +113,6 @@ function renderTable(rows, banks, transactions, month) {
 
     const ba = items.reduce((sum, b) => sum + Number(b.balance || 0), 0);
 
-    mine += Number(ba || 0);
-
     const overallBudget = items.reduce(
       (sum, b) => sum + Number(b.amount || 0),
       0,
@@ -122,6 +120,8 @@ function renderTable(rows, banks, transactions, month) {
 
     // 🔥 Available balance after budget
     const availableBalance = bal - totalBudget;
+
+    mine += Number(availableBalance || 0);
 
     const sortedItems = [
       ...items.filter(

@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Format month correctly
   const fm = document.getElementById("filterMonth");
   const premm = normalizeMonth(`${yyyy}-${mm}`);
-  const min = "2025-12";
+  const min = "2026-02";
 
   // Set default, min, max
   fm.value = premm;
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire(
         "Invalid Month",
         "You cannot select a future month.",
-        "warning"
+        "warning",
       );
     }
   });
@@ -141,7 +141,7 @@ function renderTable(rows, banks, transactions, month) {
     // 🔥 Sum all budgets for this bank in the selected month
     const totalBudget = items.reduce(
       (sum, b) => sum + Number(b.balance || 0),
-      0
+      0,
     );
 
     const pa = items.reduce((sum, b) => sum + Number(b.paidamount || 0), 0);
@@ -150,7 +150,7 @@ function renderTable(rows, banks, transactions, month) {
 
     const overallBudget = items.reduce(
       (sum, b) => sum + Number(b.amount || 0),
-      0
+      0,
     );
 
     // 🔥 Available balance after budget
@@ -158,10 +158,10 @@ function renderTable(rows, banks, transactions, month) {
 
     const sortedItems = [
       ...items.filter(
-        (r) => String(r.category).toLowerCase() !== "minimum balance"
+        (r) => String(r.category).toLowerCase() !== "minimum balance",
       ),
       ...items.filter(
-        (r) => String(r.category).toLowerCase() === "minimum balance"
+        (r) => String(r.category).toLowerCase() === "minimum balance",
       ),
     ];
 
@@ -207,7 +207,7 @@ function renderTable(rows, banks, transactions, month) {
                   <td class="text-center">₹ ${r.paidamount}</td>
                   <td class="text-center">₹ ${r.balance}</td>
                 </tr>
-              `
+              `,
                 )
                 .join("")}
                 <tr class="text-center table-dark">
@@ -228,7 +228,7 @@ function renderTable(rows, banks, transactions, month) {
 
 function calculateBankBalance(bankName, banks, transactions, month) {
   const bank = banks.find(
-    (b) => b.bank.toLowerCase() === bankName.toLowerCase()
+    (b) => b.bank.toLowerCase() === bankName.toLowerCase(),
   );
   if (!bank) return 0;
 

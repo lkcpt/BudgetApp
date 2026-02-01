@@ -85,7 +85,7 @@ function loadTransactions() {
       allTransactions = data.data;
 
       const mainRows = allTransactions.filter(
-        (r) => r.type.toLowerCase() !== "transfer"
+        (r) => r.type.toLowerCase() !== "transfer",
       );
 
       // ✅ Build category checkboxes ONCE
@@ -139,8 +139,8 @@ function renderTable(rows) {
               isCarParking
                 ? "hidden title='Editing disabled for Car Parking'"
                 : isBudget
-                ? "hidden title='Editing disabled for Car Parking'"
-                : ""
+                  ? "hidden title='Editing disabled for Car Parking'"
+                  : ""
             }
           >
             <i class="fa fa-edit"></i>
@@ -207,13 +207,12 @@ const editCategory = {
   Income: [
     "Salary",
     "Not my money",
-    "Sports",
+    "In Sports",
     "Internal",
     "Money Back",
     "Other Income",
   ],
   Expense: [
-    "Investment",
     "Food",
     "Medicals",
     "Trip",
@@ -221,7 +220,7 @@ const editCategory = {
     "Entertainment",
     "Electronics & Accessories",
     "Fasion",
-    "Sports",
+    "Ex Sports",
     "Internal",
     "Gift",
     "Money Lend",
@@ -607,6 +606,6 @@ function unselectAllCategories() {
 
 function getSelectedCategories() {
   return Array.from(document.querySelectorAll(".category-check:checked")).map(
-    (cb) => cb.value
+    (cb) => cb.value,
   );
 }
