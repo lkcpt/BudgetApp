@@ -138,17 +138,17 @@ function renderTable(rows, banks, transactions, month) {
         height="35" class="me-2"> ${bank}</h2>
         <div class="mb-2">
 Opening Balance:
-          <span class="ms-2">₹ ${opening}</span>
+          <span class="ms-2 text-nowrap">₹ ${opening}</span>
         </div>
         <div class="mb-2">
           <span class="fw-bold">Current Balance:</span>
-          <span class="ms-2">₹ ${bal.toFixed(2)}</span>
+          <span class="ms-2 text-nowrap">₹ ${bal.toFixed(2)}</span>
         </div>
         <h5 class="mb-2 text">
           <span class="fw-bold">Mine:</span>
           <span class="ms-2 ${
             availableBalance.toFixed(2) <= 0 ? "text-danger" : "text-success"
-          } fw-bold">
+          } fw-bold text-nowrap">
                     ₹ ${availableBalance.toFixed(2)}
                   </span>
         </h5>
@@ -176,9 +176,9 @@ Opening Balance:
                 }">
                   <td class="text-center">${i + 1}</td>
                   <td>${r.category}</td>
-                  <td class="text-center">₹ ${r.amount}</td>
-                  <td class="text-center">₹ ${r.paidamount}</td>
-                  <td class="text-center">₹ ${r.balance}</td>
+                  <td class="text-center text-nowrap">₹ ${r.amount}</td>
+                  <td class="text-center text-nowrap">₹ ${r.paidamount}</td>
+                  <td class="text-center text-nowrap">₹ ${r.balance}</td>
                   <td class="text-center align-middle">
                       ${
                         String(r.category).toLowerCase() != "minimum balance"
@@ -209,9 +209,9 @@ Opening Balance:
                 .join("")}
                 <tr class="text-center table-dark">
                   <td colspan="2" class=" fw-bold">Total Budget</td>
-                  <td >₹ ${overallBudget}</td>
-                  <td >₹ ${pa}</td>
-                  <td >₹ ${ba}</td>
+                  <td class="text-nowrap">₹ ${overallBudget}</td>
+                  <td class="text-nowrap">₹ ${pa}</td>
+                  <td class="text-nowrap">₹ ${ba}</td>
                   <td >-</td>
                   <td >-</td>
                 </tr> 

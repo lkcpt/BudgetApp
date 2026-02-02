@@ -110,12 +110,11 @@ function renderTransferTable(rows) {
     tbody.innerHTML += `
       <tr>
         <td>${i + 1}</td>
-        <td>${new Date(r.time).toLocaleDateString("en-GB")}</td>
         <td>${new Date(r.date).toLocaleDateString("en-GB")}</td>
         <td>${r.fromBank}</td>
         <td>${r.toBank}</td>
         <td >${r.description}</td>
-        <td class="text-center">₹${Number(r.amount).toFixed(2)}</td>
+        <td class="text-center text-nowrap">₹${Number(r.amount).toFixed(2)}</td>
         <td class="text-center text-nowrap align-middle">
           <button class="btn btn-sm btn-danger" onclick="deleteTransferUI('${
             r.transferId

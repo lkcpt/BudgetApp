@@ -121,7 +121,6 @@ function renderTable(rows) {
     tbody.innerHTML += `
       <tr>
         <td class="text-center">${i + 1}</td>
-        <td>${new Date(r.time).toLocaleDateString("en-GB")}</td>
         <td>${new Date(r.date).toLocaleDateString("en-GB")}</td>
         <td>${r.bank}</td>
         <td>${r.inc}</td>
@@ -129,7 +128,7 @@ function renderTable(rows) {
         <td>${r.app || "-"}</td>
         <td>${r.category}</td>
         <td>${r.description}</td>
-        <td class="text-center">${r.amount}</td>
+        <td class="text-center text-nowrap">₹${r.amount}</td>
         <td class="text-center text-nowrap align-middle">
           <button 
           type="button"
