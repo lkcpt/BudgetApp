@@ -108,7 +108,7 @@ function renderTotalBalance(banks, transactions, month) {
       <div class="card shadow h-100">
         <div class="card-body text-center">
           <h6>Total Balance</h6>
-          <h4>
+          <h4 class="text-nowrap">
             ₹${totalBalance.toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
@@ -127,12 +127,15 @@ function renderTotalBalance(banks, transactions, month) {
           <div class="flex-shrink-0">
             <h6 class="text-nowrap mb-1">Overall Transactions</h6>
             <h6 class="mb-1 ">
-              Net: <span class="${netClass}">₹${net.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}</span>
+              Net: <span class="${netClass} text-nowrap">₹${net.toLocaleString(
+                undefined,
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                },
+              )}</span>
             </h6>
-            <h6 class="mb-1 ">Income: <small class="text-success">
+            <h6 class="mb-1 ">Income: <small class="text-success text-nowrap">
               ₹${totalIncome.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -140,7 +143,7 @@ function renderTotalBalance(banks, transactions, month) {
             </small></h6>
 
             <h6 class="mb-1 ">Expense:
-            <small class="text-danger">
+            <small class="text-danger text-nowrap">
                ₹${totalExpense.toLocaleString(undefined, {
                  minimumFractionDigits: 2,
                  maximumFractionDigits: 2,
@@ -188,7 +191,7 @@ function renderTotalBalance(banks, transactions, month) {
       const amt = catMap[cat];
       const percent = ((amt / totalAmount) * 100).toFixed(2);
       const item = document.createElement("div");
-      item.className = "d-flex align-items-center mb-1";
+      item.className = "d-flex align-items-center mb-1 ";
       item.innerHTML = `
         <div style="width:16px; height:16px; background-color:${
           colors[i]
@@ -343,17 +346,17 @@ function renderTable(rows, banks, transactions, month) {
         height="35" class="me-2"> ${bank}</h2>
         <div class="mb-2">
 Opening Balance:
-          <span class="ms-2">₹ ${opening}</span>
+          <span class="ms-2 text-nowrap">₹ ${opening}</span>
         </div>
         <div class="mb-2">
           <span class="fw-bold">Current Balance:</span>
-          <span class="ms-2">₹ ${bal.toFixed(2)}</span>
+          <span class="ms-2 text-nowrap">₹ ${bal.toFixed(2)}</span>
         </div>
         <h5 class="mb-2 text">
           <span class="fw-bold">Mine:</span>
           <span class="ms-2 ${
             availableBalance.toFixed(2) <= 0 ? "text-danger" : "text-success"
-          } fw-bold">
+          } fw-bold text-nowrap">
                     ₹ ${availableBalance.toFixed(2)}
                   </span>
         </h5>
@@ -379,9 +382,9 @@ Opening Balance:
                 }">
                   <td class="text-center">${i + 1}</td>
                   <td>${r.category}</td>
-                  <td class="text-center">₹ ${r.amount}</td>
-                  <td class="text-center">₹ ${r.paidamount}</td>
-                  <td class="text-center">₹ ${r.balance}</td>
+                  <td class="text-center text-nowrap">₹ ${r.amount}</td>
+                  <td class="text-center text-nowrap">₹ ${r.paidamount}</td>
+                  <td class="text-center text-nowrap">₹ ${r.balance}</td>
                   
                 </tr>
               `,
@@ -389,9 +392,9 @@ Opening Balance:
                 .join("")}
                 <tr class="text-center table-dark">
                   <td colspan="2" class=" fw-bold">Total Budget</td>
-                  <td >₹ ${overallBudget}</td>
-                  <td >₹ ${pa}</td>
-                  <td >₹ ${ba}</td>
+                  <td class="text-nowrap">₹ ${pa}</td>
+                  <td class="text-nowrap">₹ ${overallBudget}</td>
+                  <td class="text-nowrap">₹ ${ba}</td>
                 </tr> 
             </tbody>
           </table>
