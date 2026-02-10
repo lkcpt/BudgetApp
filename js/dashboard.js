@@ -4,13 +4,11 @@ document.addEventListener("DOMContentLoaded", () => {
   loadBankCards(cur);
   const monthContainer = document.getElementById("displaymonth");
   monthContainer.innerHTML = ` Month :<span class="text-success"> ${formatMonth(
-    current,
+    cur,
   )}</span> `;
 
   loadBudget();
 });
-
-let bankCharts = [];
 
 async function loadBankCards(month) {
   lockPage("Fetching Data...");
@@ -40,8 +38,6 @@ async function loadBankCards(month) {
     renderTotalBalance(bankRes.data, txnRes.data, month);
   }
 }
-
-let overallChart = null;
 
 function renderTotalBalance(banks, transactions, month) {
   banks = banks || [];
@@ -79,9 +75,6 @@ function renderTotalBalance(banks, transactions, month) {
     }
   });
 
-  const netClass =
-    net > 0 ? "text-success" : net < 0 ? "text-danger" : "text-muted";
-
   // Transactions for overall pie chart (exclude transfers)
 
   const filteredTxns = transactions.filter((t) => {
@@ -91,125 +84,93 @@ function renderTotalBalance(banks, transactions, month) {
     );
   });
 
-  const catMap = {};
-  let totalAmount = 0;
+  const categoryMap = {};
+
   filteredTxns.forEach((txn) => {
     const cat = txn.category || "Other";
     const amt = Number(txn.amount) || 0;
-    catMap[cat] = (catMap[cat] || 0) + amt;
-    totalAmount += amt;
+
+    if (!categoryMap[cat]) {
+      categoryMap[cat] = { income: 0, expense: 0 };
+    }
+
+    if (txn.inc === "Income") categoryMap[cat].income += amt;
+    if (txn.inc === "Expense") categoryMap[cat].expense += amt;
   });
 
   const div = document.getElementById("total-balance-card");
   div.innerHTML = `
 
-    <!-- Total Balance Card -->
-    <div class="col-12 col-md-8 col-lg-9">
-      <div class="card shadow h-100">
-        <div class="card-body text-center">
-          <h6>Total Balance</h6>
-          <h4 class="text-nowrap">
-            ₹${totalBalance.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </h4>
+    <!-- 🔵 ROW 1 : Total Balance Full Width -->
+    <div class="row g-3 justify-content-center">
+      <div class="col-12 col-lg-9">
+        <div class="card shadow h-100">
+          <div class="card-body text-center">
+            <h6>Total Balance</h6>
+            <h4 class="text-nowrap">
+              ₹${totalBalance.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </h4>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Overall Pie Chart Card -->
-    <div class="col-12 col-md-8 col-lg-9">
-      <div class="card shadow h-100">
-        <div class="card-body d-flex flex-column flex-md-row align-items-start gap-3">
-          
-          <!-- Title + Net -->
-          <div class="flex-shrink-0">
-            <h6 class="text-nowrap mb-1">Overall Transactions</h6>
-            <h6 class="mb-1 ">
-              Net: <span class="${netClass} text-nowrap">₹${net.toLocaleString(
-                undefined,
-                {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                },
-              )}</span>
-            </h6>
-            <h6 class="mb-1 ">Income: <small class="text-success text-nowrap">
+    <!-- 🟢 ROW 2 : Income Expense Net -->
+    <div class="row g-3 justify-content-center">
+
+      <!-- Income -->
+      <div class="col-12 col-md-4 col-lg-3">
+        <div class="card shadow h-100 bg-success border-0">
+          <div class="card-body text-center text-light">
+            <h6>Total Income</h6>
+            <h4 class="text-nowrap">
               ₹${totalIncome.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
-            </small></h6>
-
-            <h6 class="mb-1 ">Expense:
-            <small class="text-danger text-nowrap">
-               ₹${totalExpense.toLocaleString(undefined, {
-                 minimumFractionDigits: 2,
-                 maximumFractionDigits: 2,
-               })}
-            </small></h6>
+            </h4>
           </div>
-
-          ${
-            totalAmount === 0
-              ? `<div class="text-center text-muted mt-3 w-100">No transactions</div>`
-              : `
-              <div class="d-flex flex-column flex-md-row align-items-center w-100 gap-3">
-                <!-- Chart -->
-                <div class="d-flex justify-content-center flex-grow-1">
-                  <canvas id="overallChart" style="max-width:300px; min-height:150px; max-height:300px;"></canvas>
-                </div>
-
-                <!-- Legend -->
-                <div id="overall-legend" class="flex-grow-1"></div>
-              </div>
-            `
-          }
         </div>
       </div>
+
+      <!-- Expense -->
+      <div class="col-12 col-md-4 col-lg-3">
+        <div class="card shadow h-100 bg-danger border-0">
+          <div class="card-body text-center text-light">
+            <h6>Total Expense</h6>
+            <h4 class="text-nowrap">
+              ₹${totalExpense.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </h4>
+          </div>
+        </div>
+      </div>
+
+      <!-- Net -->
+      <div class="col-12  col-md-4 col-lg-3">
+        <div class="card shadow h-100 bg-primary border-0">
+          <div class="card-body text-center text-light">
+            <h6>Net Balance</h6>
+            <h4 class="text-nowrap">
+              ₹${net.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </h4>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   `;
 
-  // Render overall pie chart if there is data
-  if (totalAmount > 0) {
-    const ctx = document.getElementById("overallChart").getContext("2d");
-    const colors = generateColors(Object.keys(catMap).length);
-    const chart = new Chart(ctx, {
-      type: "pie",
-      data: {
-        labels: Object.keys(catMap),
-        datasets: [{ data: Object.values(catMap), backgroundColor: colors }],
-      },
-      options: { responsive: true, plugins: { legend: { display: false } } },
-    });
-
-    // Custom legend below chart
-    const legendDiv = document.getElementById("overall-legend");
-    Object.keys(catMap).forEach((cat, i) => {
-      const amt = catMap[cat];
-      const percent = ((amt / totalAmount) * 100).toFixed(2);
-      const item = document.createElement("div");
-      item.className = "d-flex align-items-center mb-1 ";
-      item.innerHTML = `
-        <div style="width:16px; height:16px; background-color:${
-          colors[i]
-        }; margin-right:8px;"></div>
-        <span>${cat}: ₹${amt.toFixed(2)} (${percent}%)</span>
-      `;
-      legendDiv.appendChild(item);
-    });
-  }
-}
-
-// Utility to generate random colors for pie slices
-function generateColors(n) {
-  const colors = [];
-  for (let i = 0; i < n; i++) {
-    colors.push(`hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`);
-  }
-  return colors;
+  renderCategoryCards(transactions, month);
 }
 
 let allBudget = [];
@@ -340,27 +301,48 @@ function renderTable(rows, banks, transactions, month) {
       ),
     ];
 
+    const collapseId = `bank_${bank.replace(/\s+/g, "_")}`;
+
     const html = `
-      <div class="p-3 rounded mb-4 mb-4 col-12 col-md-8 col-lg-9" style="box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;">
-        <h2 class="mt-2 mb-2"><img src="images/${bank}.png"
-        height="35" class="me-2"> ${bank}</h2>
-        <div class="mb-2">
-Opening Balance:
-          <span class="ms-2 text-nowrap">₹ ${opening}</span>
+<div class="col-12 col-md-8 col-lg-9 mx-auto mb-2">
+
+  <div class="card shadow">
+
+    <!-- 🔵 CARD HEADER (CLICKABLE SUMMARY) -->
+    <div class="card-body cursor-pointer"
+         data-bs-toggle="collapse"
+         data-bs-target="#${collapseId}">
+
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+
+        <div>
+          <h5 class="mb-1">
+            <img src="images/${bank}.png" height="30" class="me-2">
+            ${bank}
+          </h5>
+          <small class="text-muted">
+            Opening ₹ ${opening}
+            
+            
+          </small>
         </div>
-        <div class="mb-2">
-          <span class="fw-bold">Current Balance:</span>
-          <span class="ms-2 text-nowrap">₹ ${bal.toFixed(2)}</span>
+
+        <div class="fw-bold">
+          <span class="${
+            availableBalance <= 0 ? "text-danger" : "text-success"
+          }">Mine ₹ ${availableBalance.toFixed(2)}</span> | 
+          Current ₹ ${bal.toFixed(2)}
         </div>
-        <h5 class="mb-2 text">
-          <span class="fw-bold">Mine:</span>
-          <span class="ms-2 ${
-            availableBalance.toFixed(2) <= 0 ? "text-danger" : "text-success"
-          } fw-bold text-nowrap">
-                    ₹ ${availableBalance.toFixed(2)}
-                  </span>
-        </h5>
-        <div class="table-responsive mb-3">
+
+      </div>
+
+    </div>
+
+    <!-- 🟢 COLLAPSIBLE BUDGET DETAILS -->
+    <div id="${collapseId}" class="collapse">
+      <div class="card-body pt-0">
+
+        <div class="table-responsive">
           <table class="table table-bordered table-striped align-middle">
             <thead class="text-center table-warning">
               <tr>
@@ -376,31 +358,38 @@ Opening Balance:
                 .map(
                   (r, i) => `
                 <tr class="${
-                  String(r.category).toLowerCase() == "minimum balance"
+                  String(r.category).toLowerCase() === "minimum balance"
                     ? "table-info"
                     : ""
                 }">
                   <td class="text-center">${i + 1}</td>
                   <td>${r.category}</td>
-                  <td class="text-center text-nowrap">₹ ${r.amount}</td>
-                  <td class="text-center text-nowrap">₹ ${r.paidamount}</td>
-                  <td class="text-center text-nowrap">₹ ${r.balance}</td>
-                  
+                  <td class="text-center">₹ ${r.amount}</td>
+                  <td class="text-center">₹ ${r.paidamount}</td>
+                  <td class="text-center">₹ ${r.balance}</td>
                 </tr>
               `,
                 )
                 .join("")}
-                <tr class="text-center table-dark">
-                  <td colspan="2" class=" fw-bold">Total Budget</td>
-                  <td class="text-nowrap">₹ ${pa}</td>
-                  <td class="text-nowrap">₹ ${overallBudget}</td>
-                  <td class="text-nowrap">₹ ${ba}</td>
-                </tr> 
+
+              <tr class="text-center table-dark">
+                <td colspan="2" class="fw-bold">Total Budget</td>
+                <td>₹ ${pa}</td>
+                <td>₹ ${overallBudget}</td>
+                <td>₹ ${ba}</td>
+              </tr>
+
             </tbody>
           </table>
         </div>
+
       </div>
-    `;
+    </div>
+
+  </div>
+
+</div>
+`;
 
     container.innerHTML += html;
   });

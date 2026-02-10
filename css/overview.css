@@ -1,0 +1,63 @@
+/* ===== GLASS CARD ===== */
+.glass-card {
+  backdrop-filter: blur(14px);
+  background: rgba(255,255,255,0.08);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: all .25s ease;
+  cursor: pointer;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0px 8px 25px rgba(0,0,0,.25);
+}
+
+/* ===== VERTICAL BARS ===== */
+.vbars {
+  height: 70px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  gap:10px;
+}
+
+.vbar {
+  width:16px;
+  border-radius:6px;
+  transition:height .6s ease;
+}
+
+/* ===== SPARKLINE ===== */
+.sparkline {
+  height:30px;
+  width:100%;
+  position:relative;
+}
+
+.sparkline span {
+  position:absolute;
+  bottom:0;
+  width:3px;
+  background:#0dcaf0;
+  border-radius:2px;
+}
+
+/* ===== MOBILE SWIPE ===== */
+.card-scroll {
+  display:flex;
+  overflow-x:auto;
+  gap:12px;
+  padding-bottom:8px;
+}
+
+.card-scroll::-webkit-scrollbar {
+  display:none;
+}
+
+/* ===== NET INDICATOR ===== */
+.net-line {
+  height:4px;
+  border-radius:3px;
+}
+
