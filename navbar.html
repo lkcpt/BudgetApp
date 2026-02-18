@@ -1,71 +1,105 @@
 <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
   <div class="container">
-    <a class="navbar-brand" href="#"><img
-        src="images/coin-indian-rupee-money-icon-260nw-2158721435-removebg-preview.png" alt="logo" width="35"
-        height="35" class="me-2">Budget
-      Tracking
-      App</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <a class="navbar-brand" href="#">
+      <img src="images/coin-indian-rupee-money-icon-260nw-2158721435-removebg-preview.png" alt="logo" width="35"
+        height="35" class="me-2">
+      Budget Tracking App
+    </a>
+
+    <!-- Mobile Toggle (ONLY visible below lg) -->
+    <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
-          <span class="nav-link fw-semibold">
-            👤 <span id="nav-username">Please Wait...</span>
-          </span>
+
+    <!-- Desktop Menu (ONLY visible lg and above) -->
+    <div class="collapse navbar-collapse d-none d-lg-flex">
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item me-3">
+          👤 <strong><span id="nav-username">Please Wait...</span></strong>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="dashboard.html">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="categoryoverview.html">Overview</a>
+
+        <li class="nav-item"><a class="nav-link" href="dashboard.html">Home</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            Category Overview
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="categoryoverview.html">Current Month</a></li>
+            <li><a class="dropdown-item" href="monthlyoverview.html">Filtered View</a></li>
+          </ul>
         </li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarLightDropdownMenuLink" role="button"
-            data-bs-toggle="dropdown" aria-expanded="false">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
             Budget
           </a>
-          <ul class="dropdown-menu dropdown-menu-light" aria-labelledby="navbarLightDropdownMenuLink">
-            <li>
-              <a class="dropdown-item" href="budget.html">Add Budget</a>
-            </li>
-            <li>
-              <a class="dropdown-item" href="managebudget.html">Manage Budget</a>
-            </li>
-            <li>
-              <a class="dropdown-item" href="viewbudget.html">View Budget</a>
-            </li>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="budget.html">Add Budget</a></li>
+            <li><a class="dropdown-item" href="managebudget.html">Manage Budget</a></li>
+            <li><a class="dropdown-item" href="viewbudget.html">View Budget</a></li>
           </ul>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="parking.html">Car Parking Details</a>
-        </li>
+
+        <li class="nav-item"><a class="nav-link" href="parking.html">Car Parking</a></li>
+
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarLightDropdownMenuLink" role="button"
-            data-bs-toggle="dropdown" aria-expanded="false">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
             Transactions
           </a>
-          <ul class="dropdown-menu dropdown-menu-light" aria-labelledby="navbarLightDropdownMenuLink">
-            <li>
-              <a class="dropdown-item" href="transaction.html">Add transaction</a>
-            </li>
-            <li>
-              <a class="dropdown-item" href="banktrans.html">Add Bank Transfer</a>
-            </li>
-            <li>
-              <a class="dropdown-item" href="viewtrans.html">View Transactions</a>
-            </li>
-            <li>
-              <a class="dropdown-item" href="transfer.html">View Bank Transfers</a>
-            </li>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="transaction.html">Add Transaction</a></li>
+            <li><a class="dropdown-item" href="banktrans.html">Add Bank Transfer</a></li>
+            <li><a class="dropdown-item" href="viewtrans.html">View Transactions</a></li>
+            <li><a class="dropdown-item" href="transfer.html">View Bank Transfers</a></li>
           </ul>
         </li>
-        <li class="nav-item">
-          <a class="btn btn-outline-danger" onclick="logout()">Logout</a>
+
+        <li class="nav-item ms-3">
+          <button class="btn btn-outline-danger" onclick="logout()">Logout</button>
         </li>
       </ul>
     </div>
   </div>
 </nav>
+
+<!-- Mobile Offcanvas -->
+<div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="mobileMenu">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+
+  <div class="offcanvas-body">
+    <p>👤 <strong><span id="nav-username1">Please Wait...</span></strong></p>
+
+    <a class="nav-link" href="dashboard.html">Home</a>
+
+    <hr>
+
+    <strong>Category Overview</strong>
+    <a class="nav-link" href="categoryoverview.html">Current Month</a>
+    <a class="nav-link" href="monthlyoverview.html">Filtered View</a>
+
+    <hr>
+
+    <strong>Budget</strong>
+    <a class="nav-link" href="budget.html">Add Budget</a>
+    <a class="nav-link" href="managebudget.html">Manage Budget</a>
+    <a class="nav-link" href="viewbudget.html">View Budget</a>
+
+    <hr>
+
+    <strong>Transactions</strong>
+    <a class="nav-link" href="transaction.html">Add Transaction</a>
+    <a class="nav-link" href="banktrans.html">Add Bank Transfer</a>
+    <a class="nav-link" href="viewtrans.html">View Transactions</a>
+    <a class="nav-link" href="transfer.html">View Bank Transfers</a>
+
+    <hr>
+
+    <a class="nav-link" href="parking.html">Car Parking</a>
+
+    <div class="mt-3">
+      <button class="btn btn-danger w-100" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</div>

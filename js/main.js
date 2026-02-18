@@ -25,6 +25,10 @@ function updateNavbarUser() {
   if (el && name) {
     el.innerText = name;
   }
+  const el1 = document.getElementById("nav-username1");
+  if (el1 && name) {
+    el1.innerText = name;
+  }
 }
 
 const URL =
@@ -115,7 +119,7 @@ function register(event) {
         unlockPage();
         if (data.status === "success") {
           Swal.fire("Success", "Registered Successfully", "success").then(
-            () => (window.location.href = "index.html")
+            () => (window.location.href = "index.html"),
           );
         } else {
           Swal.fire("Error", data.message, "error");
