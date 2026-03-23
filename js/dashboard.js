@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function loadBankCards(month) {
+  showSkeleton(); // 🔥 ADD THIS
   lockPage("Fetching Data...");
 
   const [bankRes, txnRes] = await Promise.all([
@@ -123,49 +124,31 @@ function renderTotalBalance(banks, transactions, month) {
 
       <!-- Income -->
       <div class="col-12 col-md-4 col-lg-3">
-        <div class="card shadow h-100 bg-success border-0">
-          <div class="card-body text-center text-light">
-            <h6>Total Income</h6>
-            <h4 class="text-nowrap">
-              ₹${totalIncome.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </h4>
-          </div>
-        </div>
-      </div>
+  <div class="card border-start border-4 border-success shadow-sm">
+    <div class="card-body">
+      <small class="text-muted">Total Income</small>
+      <h5 class="text-success fw-bold">₹${totalIncome.toLocaleString()}</h5>
+    </div>
+  </div>
+</div>
 
-      <!-- Expense -->
-      <div class="col-12 col-md-4 col-lg-3">
-        <div class="card shadow h-100 bg-danger border-0">
-          <div class="card-body text-center text-light">
-            <h6>Total Expense</h6>
-            <h4 class="text-nowrap">
-              ₹${totalExpense.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </h4>
-          </div>
-        </div>
-      </div>
+<div class="col-12 col-md-4 col-lg-3">
+  <div class="card border-start border-4 border-danger shadow-sm">
+    <div class="card-body">
+      <small class="text-muted">Total Expense</small>
+      <h5 class="text-danger fw-bold">₹${totalExpense.toLocaleString()}</h5>
+    </div>
+  </div>
+</div>
 
-      <!-- Net -->
-      <div class="col-12  col-md-4 col-lg-3">
-        <div class="card shadow h-100 bg-primary border-0">
-          <div class="card-body text-center text-light">
-            <h6>Net Balance</h6>
-            <h4 class="text-nowrap">
-              ₹${net.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </h4>
-          </div>
-        </div>
-      </div>
-
+<div class="col-12 col-md-4 col-lg-3">
+  <div class="card border-start border-4 border-primary shadow-sm">
+    <div class="card-body">
+      <small class="text-muted">Net Balance</small>
+      <h5 class="text-primary fw-bold">₹${net.toLocaleString()}</h5>
+    </div>
+  </div>
+</div>
     </div>
 
   `;
@@ -257,14 +240,23 @@ function renderTable(rows, banks, transactions, month) {
   let mine = 0;
   container.innerHTML = "";
   // Group rows by bank
+  // Always use banks as base
   const bankGroups = {};
+
+  // Initialize all banks
+  banks.forEach((b) => {
+    bankGroups[b.bank] = [];
+  });
+
+  // Attach budget rows if available
   rows.forEach((r) => {
     if (!bankGroups[r.bank]) bankGroups[r.bank] = [];
     bankGroups[r.bank].push(r);
   });
 
   Object.keys(bankGroups).forEach((bank) => {
-    const items = bankGroups[bank];
+    const items = bankGroups[bank] || [];
+    const hasBudget = items.length > 0;
     const { opening, bal } = calculateBankBalance(
       bank,
       banks,
@@ -273,10 +265,9 @@ function renderTable(rows, banks, transactions, month) {
     );
 
     // 🔥 Sum all budgets for this bank in the selected month
-    const totalBudget = items.reduce(
-      (sum, b) => sum + Number(b.balance || 0),
-      0,
-    );
+    const totalBudget = hasBudget
+      ? items.reduce((sum, b) => sum + Number(b.balance || 0), 0)
+      : 0;
 
     const pa = items.reduce((sum, b) => sum + Number(b.paidamount || 0), 0);
 
@@ -288,7 +279,7 @@ function renderTable(rows, banks, transactions, month) {
     );
 
     // 🔥 Available balance after budget
-    const availableBalance = bal - totalBudget;
+    const availableBalance = hasBudget ? bal - totalBudget : null;
 
     mine += Number(availableBalance || 0);
 
@@ -304,84 +295,104 @@ function renderTable(rows, banks, transactions, month) {
     const collapseId = `bank_${bank.replace(/\s+/g, "_")}`;
 
     const html = `
-<div class="col-12 col-md-8 col-lg-9 mx-auto mb-2">
+<div class="col-12 col-md-8 col-lg-9 mx-auto mb-3">
 
-  <div class="card shadow">
+  <div class="card shadow-sm border-0">
 
-    <!-- 🔵 CARD HEADER (CLICKABLE SUMMARY) -->
-    <div class="card-body cursor-pointer"
+    <!-- HEADER -->
+    <div class="card-body d-flex justify-content-between align-items-center flex-wrap"
          data-bs-toggle="collapse"
-         data-bs-target="#${collapseId}">
+         data-bs-target="#${collapseId}"
+         style="cursor:pointer;">
 
-      <div class="d-flex justify-content-between align-items-center flex-wrap">
+      <div class="d-flex align-items-center gap-2">
+
+        <!-- ✅ Bank Logo -->
+        <img src="images/${bank}.png"
+             height="30"
+             onerror="this.src='images/default.png'">
 
         <div>
-          <h5 class="mb-1">
-            <img src="images/${bank}.png" height="30" class="me-2">
-            ${bank}
-          </h5>
+          <h6 class="mb-0 fw-bold">${bank}</h6>
           <small class="text-muted">
-            Opening ₹ ${opening}
-            
-            
+            Opening ₹ ${opening.toFixed(2)}
           </small>
-        </div>
-
-        <div class="fw-bold">
-          <span class="${
-            availableBalance <= 0 ? "text-danger" : "text-success"
-          }">Mine ₹ ${availableBalance.toFixed(2)}</span> | 
-          Current ₹ ${bal.toFixed(2)}
         </div>
 
       </div>
 
+      <div class="text-end">
+        <div class="fw-bold">
+          ₹ ${bal.toFixed(2)}
+        </div>
+
+        <small class=" text-nowrap ${
+          availableBalance === null
+            ? "text-muted"
+            : availableBalance < 0
+              ? "text-danger"
+              : "text-success"
+        }">
+          ${
+            availableBalance === null
+              ? "No Budget"
+              : `Mine : ₹ ${availableBalance.toFixed(2)}`
+          }
+        </small>
+      </div>
+
     </div>
 
-    <!-- 🟢 COLLAPSIBLE BUDGET DETAILS -->
+    <!-- COLLAPSE BODY -->
     <div id="${collapseId}" class="collapse">
       <div class="card-body pt-0">
 
-        <div class="table-responsive">
-          <table class="table table-bordered table-striped align-middle">
-            <thead class="text-center table-warning">
-              <tr>
-                <th>S.No</th>
-                <th>Category</th>
-                <th>Amount</th>
-                <th>Paid Amount</th>
-                <th>Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${sortedItems
-                .map(
-                  (r, i) => `
-                <tr class="${
-                  String(r.category).toLowerCase() === "minimum balance"
-                    ? "table-info"
-                    : ""
-                }">
-                  <td class="text-center">${i + 1}</td>
-                  <td>${r.category}</td>
-                  <td class="text-center">₹ ${r.amount}</td>
-                  <td class="text-center">₹ ${r.paidamount}</td>
-                  <td class="text-center">₹ ${r.balance}</td>
-                </tr>
-              `,
-                )
-                .join("")}
+        ${
+          hasBudget
+            ? `
+              <div class="table-responsive">
+                <table class="table table-bordered table-striped table-sm">
+                  <thead class=" text-center table-warning">
+                    <tr>
+                      <th>S.No.</th>
+                      <th>Category</th>
+                      <th>Amount</th>
+                      <th>Paid</th>
+                      <th>Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${sortedItems
+                      .map(
+                        (r, i) => `
+                      <tr>
+                        <td class="text-center">${i + 1}</td>
+                        <td>${r.category}</td>
+                        <td class="text-center">₹ ${r.amount}</td>
+                        <td class="text-center">₹ ${r.paidamount}</td>
+                        <td class="text-center">₹ ${r.balance}</td>
+                      </tr>
+                    `,
+                      )
+                      .join("")}
 
-              <tr class="text-center table-dark">
-                <td colspan="2" class="fw-bold">Total Budget</td>
-                <td>₹ ${pa}</td>
-                <td>₹ ${overallBudget}</td>
-                <td>₹ ${ba}</td>
-              </tr>
-
-            </tbody>
-          </table>
-        </div>
+                      <tr class="table-dark text-center fw-bold">
+          <td colspan="2">Total</td>
+          <td>₹ ${overallBudget.toFixed(2)}</td>
+          <td>₹ ${pa.toFixed(2)}</td>
+          <td>₹ ${ba.toFixed(2)}</td>
+        </tr>
+                      
+                  </tbody>
+                </table>
+              </div>
+            `
+            : `
+              <div class="text-center text-muted py-3">
+                No budget data available
+              </div>
+            `
+        }
 
       </div>
     </div>
@@ -439,3 +450,114 @@ let id = "";
 let paidamount = 0;
 
 let fullBudgetAmount = 0;
+
+function showSummarySkeleton() {
+  return `
+    <div class="row g-3 justify-content-center">
+
+      <!-- ✅ FULL WIDTH TOTAL BALANCE -->
+      <div class="col-12 col-lg-9">
+        <div class="card shadow-sm">
+          <div class="card-body text-center">
+            <div class="placeholder-glow">
+              <span class="placeholder col-4 mb-2"></span>
+              <span class="placeholder col-6"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ NEXT ROW (force new line) -->
+      <div class="w-100"></div>
+
+      <!-- Income -->
+      <div class="col-12 col-md-4 col-lg-3">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="placeholder-glow">
+              <span class="placeholder col-6 mb-2"></span>
+              <span class="placeholder col-8"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expense -->
+      <div class="col-12 col-md-4 col-lg-3">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="placeholder-glow">
+              <span class="placeholder col-6 mb-2"></span>
+              <span class="placeholder col-8"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Net -->
+      <div class="col-12 col-md-4 col-lg-3">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="placeholder-glow">
+              <span class="placeholder col-6 mb-2"></span>
+              <span class="placeholder col-8"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+function showBankSkeleton(count = 3) {
+  return `
+    ${Array.from({ length: count })
+      .map(
+        () => `
+      <div class="col-12 col-md-8 col-lg-9 mx-auto mb-3">
+
+        <div class="card shadow-sm border-0">
+
+          <!-- HEADER -->
+          <div class="card-body d-flex justify-content-between align-items-center">
+
+            <div class="d-flex align-items-center gap-2">
+
+              <!-- Logo Skeleton -->
+              <div class="placeholder-glow">
+                <span class="placeholder rounded-circle" style="width:30px;height:30px;"></span>
+              </div>
+
+              <div class="placeholder-glow w-100">
+                <span class="placeholder col-6 mb-1"></span>
+                <span class="placeholder col-4"></span>
+              </div>
+
+            </div>
+
+            <div class="text-end placeholder-glow">
+              <span class="placeholder col-6 d-block mb-1"></span>
+              <span class="placeholder col-4"></span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    `,
+      )
+      .join("")}
+  `;
+}
+
+function showSkeleton(bankCount = 3) {
+  const div1 = document.getElementById("total-balance-card");
+  const div2 = document.getElementById("bankTables");
+
+  // Summary skeleton
+  div1.innerHTML = showSummarySkeleton();
+
+  // Bank skeleton
+  div2.innerHTML = showBankSkeleton(bankCount);
+}
