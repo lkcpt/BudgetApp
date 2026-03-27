@@ -127,7 +127,7 @@ function renderTotalBalance(banks, transactions, month) {
   <div class="card border-start border-4 border-success shadow-sm">
     <div class="card-body">
       <small class="text-muted">Total Income</small>
-      <h5 class="text-success fw-bold">₹${totalIncome.toLocaleString()}</h5>
+      <h5 class="text-success fw-bold text-nowrap">₹${totalIncome.toLocaleString()}</h5>
     </div>
   </div>
 </div>
@@ -136,7 +136,7 @@ function renderTotalBalance(banks, transactions, month) {
   <div class="card border-start border-4 border-danger shadow-sm">
     <div class="card-body">
       <small class="text-muted">Total Expense</small>
-      <h5 class="text-danger fw-bold">₹${totalExpense.toLocaleString()}</h5>
+      <h5 class="text-danger fw-bold text-nowrap">₹${totalExpense.toLocaleString()}</h5>
     </div>
   </div>
 </div>
@@ -145,7 +145,7 @@ function renderTotalBalance(banks, transactions, month) {
   <div class="card border-start border-4 border-primary shadow-sm">
     <div class="card-body">
       <small class="text-muted">Net Balance</small>
-      <h5 class="text-primary fw-bold">₹${net.toLocaleString()}</h5>
+      <h5 class="text-primary fw-bold text-nowrap">₹${net.toLocaleString()}</h5>
     </div>
   </div>
 </div>
@@ -314,7 +314,7 @@ function renderTable(rows, banks, transactions, month) {
 
         <div>
           <h6 class="mb-0 fw-bold">${bank}</h6>
-          <small class="text-muted">
+          <small class="text-muted text-nowrap">
             Opening ₹ ${opening.toFixed(2)}
           </small>
         </div>
@@ -322,7 +322,7 @@ function renderTable(rows, banks, transactions, month) {
       </div>
 
       <div class="text-end">
-        <div class="fw-bold">
+        <div class="fw-bold text-nowrap">
           ₹ ${bal.toFixed(2)}
         </div>
 
@@ -368,9 +368,9 @@ function renderTable(rows, banks, transactions, month) {
                       <tr>
                         <td class="text-center">${i + 1}</td>
                         <td>${r.category}</td>
-                        <td class="text-center">₹ ${r.amount}</td>
-                        <td class="text-center">₹ ${r.paidamount}</td>
-                        <td class="text-center">₹ ${r.balance}</td>
+                        <td class="text-center text-nowrap">₹ ${r.amount}</td>
+                        <td class="text-center text-nowrap">₹ ${r.paidamount}</td>
+                        <td class="text-center text-nowrap">₹ ${r.balance}</td>
                       </tr>
                     `,
                       )
@@ -378,9 +378,9 @@ function renderTable(rows, banks, transactions, month) {
 
                       <tr class="table-dark text-center fw-bold">
           <td colspan="2">Total</td>
-          <td>₹ ${overallBudget.toFixed(2)}</td>
-          <td>₹ ${pa.toFixed(2)}</td>
-          <td>₹ ${ba.toFixed(2)}</td>
+          <td class="text-nowrap">₹ ${overallBudget.toFixed(2)}</td>
+          <td class="text-nowrap">₹ ${pa.toFixed(2)}</td>
+          <td class="text-nowrap">₹ ${ba.toFixed(2)}</td>
         </tr>
                       
                   </tbody>
