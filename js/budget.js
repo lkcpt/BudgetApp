@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   month.min = current;
   month.max = current;
 
-  month.addEventListener("input", () => {
+  month.addEventListener("change", () => {
     if (month.value !== current) {
       month.value = current;
       Swal.fire(
