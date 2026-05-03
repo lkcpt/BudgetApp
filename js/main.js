@@ -32,7 +32,7 @@ function updateNavbarUser() {
 }
 
 const URL =
-  "https://script.google.com/macros/s/AKfycbx5T-FPidHSGH7Tgm88B3sXNR5xVoLEslffXW5d_J3Pvv1GwR95hsEstQKXnEBW2Gf2/exec";
+  "https://script.google.com/macros/s/AKfycbxw-9eqbRoYQdnRQLUeEAZz5c26qrPU-TWgDbskgdWqh4iXLlss7NY7ZrqHOEHCyZwJ/exec";
 
 //Login page Code
 function login(event) {
