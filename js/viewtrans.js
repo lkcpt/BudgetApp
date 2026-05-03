@@ -205,15 +205,22 @@ function openEditModal(index) {
 const editCategory = {
   Income: [
     "Salary",
-    "Not my money",
+    "Food",
+    "Trip",
+    "Entertainment",
+    "Medicals",
+    "Travel",
     "Sports",
     "Internal",
+    "Gift",
     "Money Lend",
+    "Cash Transfer",
     "Other Income",
   ],
   Expense: [
     "Food",
     "Medicals",
+    "Travel",
     "Trip",
     "Grocery",
     "Entertainment",
@@ -223,7 +230,7 @@ const editCategory = {
     "Internal",
     "Gift",
     "Money Lend",
-    "Not my money",
+    "Cash Transfer",
     "Other Expense",
   ],
 };
