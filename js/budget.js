@@ -341,7 +341,7 @@ function submitBudgetModal() {
           loadPreviousBudgets(); // 🔥 refresh & disable button
         });
       } else {
-        Swal.fire("Error", data.message, "error");
+        Swal.fire("Error", "data.message", "error");
       }
     });
 }
